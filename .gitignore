@@ -1,0 +1,27 @@
+# Datasets
+data/*.csv
+data/*.jpg
+data/*.png
+data/*.zip
+*.db
+
+# Model weights
+models/*.h5
+models/*.pb
+models/saved_model/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# Environment
+.env
+venv/
+
+# VS Code
+.vscode/
+
+# Mac
+.DS_Store
