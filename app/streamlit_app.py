@@ -1,176 +1,315 @@
-import io
-import warnings
-
 import streamlit as st
-from PIL import Image, ImageOps, UnidentifiedImageError
+import db
+from ui import setup, clear_session, flash
 
 
-st.set_page_config(
-    page_title="Skin Lesion Classification",
-    page_icon="🔬",
-    layout="wide",
-)
-
-MAX_FILE_BYTES = 10 * 1024 * 1024
-MAX_IMAGE_PIXELS = 20_000_000
+ROLE_OPTIONS = {
+    "Healthcare Worker": "healthcare_worker",
+    "System Administrator": "system_administrator",
+}
 
 
-def load_image(uploaded_file):
-    """Validate the uploaded file and return an RGB preview."""
-    if uploaded_file.size > MAX_FILE_BYTES:
-        raise ValueError("Please upload an image smaller than 10 MB.")
-
-    data = uploaded_file.getvalue()
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("error", Image.DecompressionBombWarning)
-
-        with Image.open(io.BytesIO(data)) as image:
-            if image.format not in {"JPEG", "PNG"}:
-                raise ValueError("Please upload a genuine JPG or PNG image.")
-
-            if image.width * image.height > MAX_IMAGE_PIXELS:
-                raise ValueError(
-                    "This image is too large. Please use an image "
-                    "with no more than 20 million pixels."
-                )
-
-            image.verify()
-
-        # Reopen after verification to decode the image.
-        with Image.open(io.BytesIO(data)) as image:
-            image.load()
-            return ImageOps.exif_transpose(image).convert("RGB")
-
-
-with st.sidebar:
-    st.header("About the project")
-    st.write(
-        "A CNN-based research project for classifying skin lesion "
-        "images into three target categories."
-    )
-    st.markdown(
-        "- Melanoma\n"
-        "- Basal Cell Carcinoma (BCC)\n"
-        "- Squamous Cell Carcinoma (SCC)"
-    )
-
-    st.divider()
-    st.subheader("Application status")
-    st.info("Interface prototype — model integration pending.")
-
-    st.caption(
-        "The current prototype previews uploaded images. "
-        "It does not produce a diagnosis."
-    )
-
-
-st.title("Skin Lesion Classification")
-st.write(
-    "Upload a skin lesion image to preview it and explore "
-    "the application's analysis workflow."
-)
-
-st.warning(
-    "Research prototype only. This application does not provide "
-    "a medical diagnosis or replace assessment by a qualified "
-    "healthcare professional."
-)
-
-upload_column, results_column = st.columns(2, gap="large")
-
-image = None
-
-with upload_column:
-    st.subheader("1. Upload an image")
-    st.caption("Accepted formats: JPG, JPEG and PNG. Maximum size: 10 MB.")
-
-    uploaded_file = st.file_uploader(
-        "Choose a skin lesion image",
-        type=["jpg", "jpeg", "png"],
-        help="Use an image without identifying patient information.",
-    )
-
-    if uploaded_file is None:
-        st.info("Upload an image to begin.")
+def open_account_page(user):
+    if db.profile_complete(user):
+        st.switch_page("pages/1_Dashboard.py")
     else:
-        try:
-            image = load_image(uploaded_file)
+        st.switch_page("pages/4_Account.py")
 
-        except ValueError as exc:
-            st.error(str(exc))
 
-        except (
-            UnidentifiedImageError,
-            OSError,
-            SyntaxError,
-            Image.DecompressionBombWarning,
-            Image.DecompressionBombError,
-        ):
-            st.error(
-                "The image could not be read safely. "
-                "Please choose another JPG or PNG file."
+user = setup("Welcome", protected=False)
+
+if user:
+    open_account_page(user)
+
+
+st.title("Welcome to SkinCare Research")
+st.write(
+    "A workspace for skin lesion image review "
+    "and CNN classification research."
+)
+st.info(
+    "Register or sign in to access your dashboard. "
+    "Predictions will become available after model integration."
+)
+
+flash()
+
+left, right = st.columns([1.15, 1], gap="large")
+
+with left:
+    login_tab, register_tab = st.tabs(
+        ["Sign in", "Create account"]
+    )
+
+    with login_tab:
+        with st.form("login", clear_on_submit=True):
+            email = st.text_input(
+                "Email address",
+                key="login_email",
+                max_chars=254,
             )
 
-        if image is not None:
-            st.subheader("2. Image preview")
-            st.image(
-                image,
-                caption=uploaded_file.name,
-                use_column_width=True,
+            password = st.text_input(
+                "Password",
+                type="password",
+                key="login_password",
+                max_chars=128,
+            )
+
+            submitted = st.form_submit_button(
+                "Sign in",
+                type="primary",
+                use_container_width=True,
+            )
+
+        if submitted:
+            try:
+                token = db.sign_in(email, password)
+                signed_in_user = db.session_user(token)
+
+                if signed_in_user is None:
+                    db.sign_out(token)
+                    raise ValueError(
+                        "Sign-in could not be completed. Please try again."
+                    )
+
+                clear_session()
+                st.session_state["auth_token"] = token
+                open_account_page(signed_in_user)
+
+            except ValueError as exc:
+                st.error(str(exc))
+
+        st.caption(
+            "Email verification and password-reset emails "
+            "are not enabled in this prototype."
+        )
+
+    with register_tab:
+        # Outside the form so changing the role updates its fields.
+        role_label = st.selectbox(
+            "Which account are you creating?",
+            options=list(ROLE_OPTIONS),
+            key="registration_role",
+        )
+        requested_role = ROLE_OPTIONS[role_label]
+        is_administrator = requested_role == "system_administrator"
+
+        if is_administrator:
+            st.info(
+                "System Administrator registration requires an "
+                "invitation for your email address and healthcare "
+                "centre. After registration, your application "
+                "must be approved before you can sign in."
+            )
+            other_role_label = "Healthcare Worker"
+        else:
+            st.info(
+                "Healthcare Worker accounts are active immediately "
+                "after registration. No invitation or administrator "
+                "approval is required."
+            )
+            other_role_label = "System Administrator"
+
+        st.caption(
+            "Full name, healthcare centre, email and password "
+            "are required for both roles."
+        )
+
+        # A separate checkbox state is kept for each signup role.
+        link_existing = st.checkbox(
+            f"I already have a {other_role_label} account "
+            "and am creating my separate account for this role.",
+            key=f"link_existing_{requested_role}",
+        )
+
+        if link_existing:
+            st.info(
+                "Verify your existing account below. Your new "
+                "account must use a different email address "
+                "and password."
+            )
+
+        with st.form(
+            f"register_{requested_role}",
+            clear_on_submit=True,
+        ):
+            name = st.text_input(
+                "Full name",
+                max_chars=100,
+                key=f"register_name_{requested_role}",
+            )
+
+            healthcare_center = st.text_input(
+                "Healthcare centre name",
+                max_chars=150,
+                key=f"register_center_{requested_role}",
+                help=(
+                    "Enter the healthcare centre where you work. "
+                    "Administrator applications must match the "
+                    "centre named in their invitation."
+                ),
+            )
+
+            new_email = st.text_input(
+                "Email address",
+                max_chars=254,
+                key=f"register_email_{requested_role}",
+            )
+
+            new_password = st.text_input(
+                "Password",
+                type="password",
+                max_chars=128,
+                key=f"register_password_{requested_role}",
+            )
+
+            confirm = st.text_input(
+                "Confirm password",
+                type="password",
+                max_chars=128,
+                key=f"register_confirm_{requested_role}",
             )
 
             st.caption(
-                f"Dimensions: {image.width} × {image.height} pixels "
-                f"• File size: {uploaded_file.size / 1024:.1f} KB"
+                "Use a password or passphrase with 12–128 characters."
             )
-            st.success("Image loaded successfully.")
 
+            invitation_code = None
 
-with results_column:
-    st.subheader("3. Analysis results")
+            if is_administrator:
+                invitation_code = st.text_input(
+                    "Administrator invitation code",
+                    type="password",
+                    max_chars=200,
+                    key="register_administrator_invitation",
+                    help=(
+                        "Use the code issued for your email address "
+                        "by an administrator at your healthcare centre."
+                    ),
+                )
 
-    st.write(
-        "The trained model will eventually display a predicted "
-        "category and model scores here."
-    )
+            linked_email = None
+            linked_password = None
 
-    analyse = st.button(
-        "Analyse image",
-        type="primary",
-        disabled=image is None,
-        use_container_width=True,
-    )
+            if link_existing:
+                st.markdown(
+                    f"**Verify your existing {other_role_label} account**"
+                )
 
-    if analyse and image is not None:
-        st.info(
-            "Your image is ready. Classification is unavailable "
-            "because a trained model has not yet been integrated."
+                linked_email = st.text_input(
+                    "Existing account email address",
+                    max_chars=254,
+                    key=f"linked_email_{requested_role}",
+                )
+
+                linked_password = st.text_input(
+                    "Existing account password",
+                    type="password",
+                    max_chars=128,
+                    key=f"linked_password_{requested_role}",
+                )
+
+            agree = st.checkbox(
+                "I understand this is a research prototype "
+                "and will use de-identified images.",
+                key=f"register_agree_{requested_role}",
+            )
+
+            registered = st.form_submit_button(
+                (
+                    "Submit administrator application"
+                    if is_administrator
+                    else "Create account"
+                ),
+                type="primary",
+                use_container_width=True,
+            )
+
+        if registered:
+            try:
+                if not agree:
+                    raise ValueError(
+                        "Please acknowledge the research-use notice."
+                    )
+
+                if new_password != confirm:
+                    raise ValueError("The passwords do not match.")
+
+                if is_administrator and not (
+                    invitation_code or ""
+                ).strip():
+                    raise ValueError(
+                        "Enter your administrator invitation code."
+                    )
+
+                if link_existing and (
+                    not (linked_email or "").strip()
+                    or not linked_password
+                ):
+                    raise ValueError(
+                        "Enter your existing account email and "
+                        "password to link your two accounts."
+                    )
+
+                db.register(
+                    name=name,
+                    email=new_email,
+                    password=new_password,
+                    healthcare_center=healthcare_center,
+                    requested_role=requested_role,
+                    invitation_code=(
+                        invitation_code.strip()
+                        if is_administrator
+                        else None
+                    ),
+                    linked_account_email=(
+                        linked_email if link_existing else None
+                    ),
+                    linked_account_password=(
+                        linked_password if link_existing else None
+                    ),
+                )
+
+                if is_administrator:
+                    st.success(
+                        "Administrator application submitted. "
+                        "You can sign in once an administrator "
+                        "at your healthcare centre approves it."
+                    )
+                else:
+                    st.success(
+                        "Healthcare Worker account created. "
+                        "You can sign in now using the Sign in tab."
+                    )
+
+            except ValueError as exc:
+                st.error(str(exc))
+
+        st.caption(
+            "Entering a healthcare centre name does not verify "
+            "employment at that centre."
         )
-        st.write("**Predicted category:** Unavailable")
-        st.write("**Model score:** Unavailable")
 
-    elif image is not None:
-        st.info("Click Analyse image to demonstrate the next step.")
-    else:
-        st.info("Results will appear here after a valid image is uploaded.")
+with right:
+    st.subheader("Your research workspace")
 
-
-st.divider()
-
-with st.expander("How to use this prototype"):
     st.markdown(
-        "1. Upload a JPG or PNG image.\n"
-        "2. Check the image preview.\n"
-        "3. Click **Analyse image**.\n"
-        "4. Review the model availability message."
-    )
-    st.write(
-        "Image validation checks file readability and size. "
-        "It does not establish whether the image depicts a skin lesion."
+        """
+        **Dashboard** — account role, healthcare centre and activity
+
+        **Analyse Image** — upload, preview and save a review
+
+        **History** — your saved records and CSV export
+
+        **Account** — profile, healthcare centre and password settings
+
+        **Dataset Status** — cleaned dataset and database checks
+
+        **Help** — instructions and project scope
+        """
     )
 
-st.caption(
-    "Prototype uploads are processed in memory; this code does not "
-    "write uploaded images to disk."
-)
+    st.warning(
+        "No clinical diagnosis is provided at this milestone."
+    )

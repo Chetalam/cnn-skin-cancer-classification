@@ -25,3 +25,15 @@ venv/
 
 # Mac
 .DS_Store
+
+# Streamlit application database
+app/storage/
+*.db-wal
+*.db-shm
+*.db-journal
+
+# Additional virtual environment
+.venv/
+
+# Streamlit secrets
+.streamlit/secrets.toml
