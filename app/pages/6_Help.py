@@ -1,24 +1,20 @@
 import streamlit as st
-from ui import setup,disclaimer
+from ui import setup, disclaimer
 
-setup('Help')
-st.title('Help and project information')
+user = setup("Help")
+st.title("Help")
+with st.expander("Account and sign-in", expanded=True):
+    st.write("Use Account to edit your name and centre or change your password. Changing your password ends all sessions for that account. Email verification and password-reset emails are not enabled.")
+with st.expander("Deactivation and reactivation"):
+    st.write("Open Account → Deactivate profile. Enter your current password and confirm. Your profile and reviews remain saved. An active administrator at your centre can reactivate your account. The last active administrator at a centre cannot self-deactivate.")
+if user["role"] == "healthcare_worker":
+    with st.expander("Create and view reviews"):
+        st.write("Open Analyse Image, upload a supported de-identified image and save the preview. History contains only your own reviews and supports CSV export. Model integration is pending; awaiting-model records are not predictions.")
+    with st.expander("Update or delete a review"):
+        st.write("Open Review Records to update a case reference or permanently delete one of your own reviews. Deletion cannot be undone.")
+else:
+    with st.expander("Administrator tasks"):
+        st.write("User Management controls account access within your centre. Dataset Status manages imported dataset metadata. Database Guide explains the tables and CRUD actions and shows database health.")
+    with st.expander("Image reviews"):
+        st.write("Sign out and use your separate Healthcare Worker account to upload images or access review history. Administrator access does not expose other users' private reviews. Previously saved administrator reviews remain retained in the database.")
 disclaimer()
-instructions,project=st.tabs(['Using the app','Project status'])
-with instructions:
-    st.markdown('''
-    1. Open **Analyse Image** from the sidebar.
-    2. Choose a de-identified JPG or PNG, up to 10 MB.
-    3. Inspect the preview and optionally add an anonymous case reference.
-    4. Agree to save the preview and click **Analyse image and save review**.
-    5. Open **History** to view, export or delete your records.
-    ''')
-    st.write('Account settings let you update your name or change your password. Log out when finished.')
-    st.caption('Refreshing the browser may require signing in again. Sessions expire after eight hours.')
-with project:
-    st.write('Target classes: Melanoma, Basal Cell Carcinoma (BCC), Squamous Cell Carcinoma (SCC).')
-    st.write('Datasets: HAM10000 and PAD-UFES-20. Planned comparison: MobileNetV2, EfficientNetB0 and ResNet50.')
-    st.success('Database setup, exploratory analysis and initial cleaning completed in Colab.')
-    st.info('Remaining: grouped splitting, architecture-specific preprocessing, training, evaluation and model integration.')
-    st.write('The local app database includes users, hashed sessions, cancer classes, image previews, result records, model metadata, audit events and imported dataset metadata.')
-    st.caption('Email verification and email-based password recovery need a mail service and are not enabled. The 30% milestone covers the working interface and data preparation, not clinical validation.')

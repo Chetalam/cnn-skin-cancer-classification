@@ -1,91 +1,151 @@
 import streamlit as st
 import db
+
 from ui import setup, flash, timestamp
 
 
 user = setup("Dashboard")
-
-st.title("Your dashboard")
-st.write("Welcome back, " + user["full_name"] + ".")
+administrator = user["role"] == "system_administrator"
 
 role_labels = {
     "system_administrator": "System Administrator",
     "healthcare_worker": "Healthcare Worker",
 }
 
+st.title(
+    "Administrator dashboard"
+    if administrator
+    else "Healthcare Worker dashboard"
+)
+
+st.write("Welcome back, " + user["full_name"] + ".")
+
 role_column, centre_column = st.columns(2)
 
-with role_column:
-    st.write(
-        "**Account role:** "
-        + role_labels.get(user["role"], "Unknown")
-    )
+role_column.write(
+    "**Account role:** "
+    + role_labels.get(user["role"], "Unknown")
+)
 
-with centre_column:
-    st.write(
-        "**Healthcare centre:** "
-        + (user.get("healthcare_center") or "Not provided")
-    )
+centre_column.write(
+    "**Healthcare centre:** "
+    + (user.get("healthcare_center") or "Not provided")
+)
 
 flash()
 
-rows = db.history(user["id"])
-summary = db.dataset_summary()
+if administrator:
+    st.subheader("Users at your healthcare centre")
 
-col1, col2, col3 = st.columns(3)
+    accounts = db.list_accounts_for_review(user["id"])
 
-col1.metric("Your saved reviews", len(rows))
-
-col2.metric(
-    "Completed predictions",
-    sum(row["status"] == "predicted" for row in rows),
-)
-
-col3.metric(
-    "Imported dataset images",
-    sum(row["image_count"] for row in summary),
-)
-
-st.subheader("Start a review")
-st.write(
-    "Upload a lesion image, check the preview "
-    "and save it to your history."
-)
-
-st.page_link(
-    "pages/2_Analyse_Image.py",
-    label="Open Analyse Image",
-    icon="🔬",
-)
-
-st.info(
-    "The CNN is not integrated. Saved reviews have the status "
-    "“Awaiting model”, with no predicted class or confidence."
-)
-
-st.subheader("Recent activity")
-
-if rows:
-    recent_activity = [
-        {
-            "Case reference": row["case_reference"] or "—",
-            "File": row["file_name"],
-            "Status": (
-                "Awaiting model"
-                if row["status"] == "awaiting_model"
-                else "Predicted"
-            ),
-            "Saved": timestamp(row["uploaded_at"]),
-        }
-        for row in rows[:5]
+    managed_accounts = [
+        account
+        for account in accounts
+        if account["id"] != user["id"]
     ]
 
-    st.dataframe(
-        recent_activity,
-        hide_index=True,
-        use_container_width=True,
+    if managed_accounts:
+        st.dataframe(
+            [
+                {
+                    "Name": account["full_name"],
+                    "Email": account["email"],
+                    "Role": role_labels.get(
+                        account["role"],
+                        account["role"],
+                    ),
+                    "Status": account["account_status"].title(),
+                    "Registered": timestamp(
+                        account["created_at"]
+                    ),
+                }
+                for account in managed_accounts
+            ],
+            hide_index=True,
+            use_container_width=True,
+        )
+    else:
+        st.info(
+            "No other users are registered at your "
+            "healthcare centre."
+        )
+
+    st.caption(
+        "Use User Management in the sidebar to suspend "
+        "or reactivate accounts."
     )
+
 else:
-    st.write(
-        "No reviews yet. Your first saved image will appear here."
+    rows = db.history(user["id"])
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric(
+        "Your saved reviews",
+        len(rows),
     )
+
+    col2.metric(
+        "Your completed predictions",
+        sum(
+            row["status"] == "predicted"
+            for row in rows
+        ),
+    )
+
+    col3.metric(
+        "Your reviews awaiting model",
+        sum(
+            row["status"] == "awaiting_model"
+            for row in rows
+        ),
+    )
+
+    st.subheader("Start a review")
+
+    st.write(
+        "Upload a de-identified lesion image, "
+        "check the preview and save a review."
+    )
+
+    st.page_link(
+        "pages/2_Analyse_Image.py",
+        label="Open Analyse Image",
+        icon="🔬",
+    )
+
+    st.info(
+        "The CNN is not integrated. Newly saved reviews "
+        "await the model and have no predicted class "
+        "or confidence."
+    )
+
+    st.subheader("Your recent reviews")
+
+    if rows:
+        recent_reviews = [
+            {
+                "Case reference": row["case_reference"] or "—",
+                "File": row["file_name"],
+                "Status": (
+                    "Awaiting model"
+                    if row["status"] == "awaiting_model"
+                    else "Predicted"
+                ),
+                "Saved": timestamp(row["uploaded_at"]),
+            }
+            for row in rows[:5]
+        ]
+
+        st.dataframe(
+            recent_reviews,
+            hide_index=True,
+            use_container_width=True,
+        )
+
+    else:
+        st.info(
+            "No reviews yet. Your first saved review "
+            "will appear here."
+        )

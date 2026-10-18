@@ -70,7 +70,7 @@ with left:
                 if signed_in_user is None:
                     db.sign_out(token)
                     raise ValueError(
-                        "Sign-in could not be completed. Please try again."
+                        "Sign-in could not be completed."
                     )
 
                 clear_session()
@@ -86,48 +86,27 @@ with left:
         )
 
     with register_tab:
-        # Outside the form so changing the role updates its fields.
         role_label = st.selectbox(
             "Which account are you creating?",
             options=list(ROLE_OPTIONS),
             key="registration_role",
         )
+
         requested_role = ROLE_OPTIONS[role_label]
-        is_administrator = requested_role == "system_administrator"
 
-        if is_administrator:
-            st.info(
-                "System Administrator registration requires an "
-                "invitation for your email address and healthcare "
-                "centre. After registration, your application "
-                "must be approved before you can sign in."
-            )
-            other_role_label = "Healthcare Worker"
-        else:
-            st.info(
-                "Healthcare Worker accounts are active immediately "
-                "after registration. No invitation or administrator "
-                "approval is required."
-            )
-            other_role_label = "System Administrator"
-
-        st.caption(
-            "Full name, healthcare centre, email and password "
-            "are required for both roles."
+        st.info(
+            "Both account roles are active immediately after "
+            "registration. No invitation or approval is required."
         )
 
-        # A separate checkbox state is kept for each signup role.
-        link_existing = st.checkbox(
-            f"I already have a {other_role_label} account "
-            "and am creating my separate account for this role.",
-            key=f"link_existing_{requested_role}",
-        )
+        # Healthcare Worker signup never requires an existing account.
+        link_existing = False
 
-        if link_existing:
-            st.info(
-                "Verify your existing account below. Your new "
-                "account must use a different email address "
-                "and password."
+        if requested_role == "system_administrator":
+            link_existing = st.checkbox(
+                "I already have a Healthcare Worker account "
+                "and am creating my separate System Administrator account.",
+                key="link_existing_system_administrator",
             )
 
         with st.form(
@@ -137,91 +116,73 @@ with left:
             name = st.text_input(
                 "Full name",
                 max_chars=100,
-                key=f"register_name_{requested_role}",
+                key=f"name_{requested_role}",
             )
 
             healthcare_center = st.text_input(
                 "Healthcare centre name",
                 max_chars=150,
-                key=f"register_center_{requested_role}",
-                help=(
-                    "Enter the healthcare centre where you work. "
-                    "Administrator applications must match the "
-                    "centre named in their invitation."
-                ),
+                key=f"center_{requested_role}",
             )
 
             new_email = st.text_input(
                 "Email address",
                 max_chars=254,
-                key=f"register_email_{requested_role}",
+                key=f"email_{requested_role}",
             )
 
             new_password = st.text_input(
                 "Password",
                 type="password",
                 max_chars=128,
-                key=f"register_password_{requested_role}",
+                key=f"password_{requested_role}",
             )
 
             confirm = st.text_input(
                 "Confirm password",
                 type="password",
                 max_chars=128,
-                key=f"register_confirm_{requested_role}",
+                key=f"confirm_{requested_role}",
             )
 
             st.caption(
                 "Use a password or passphrase with 12–128 characters."
             )
 
-            invitation_code = None
-
-            if is_administrator:
-                invitation_code = st.text_input(
-                    "Administrator invitation code",
-                    type="password",
-                    max_chars=200,
-                    key="register_administrator_invitation",
-                    help=(
-                        "Use the code issued for your email address "
-                        "by an administrator at your healthcare centre."
-                    ),
-                )
-
             linked_email = None
             linked_password = None
 
             if link_existing:
                 st.markdown(
-                    f"**Verify your existing {other_role_label} account**"
+                    "**Verify your existing Healthcare Worker account**"
+                )
+
+                st.caption(
+                    "Your new account must use a different "
+                    "email address and password."
                 )
 
                 linked_email = st.text_input(
                     "Existing account email address",
                     max_chars=254,
-                    key=f"linked_email_{requested_role}",
+                    key="linked_email_system_administrator",
                 )
 
                 linked_password = st.text_input(
                     "Existing account password",
                     type="password",
                     max_chars=128,
-                    key=f"linked_password_{requested_role}",
+                    key="linked_password_system_administrator",
                 )
 
             agree = st.checkbox(
                 "I understand this is a research prototype "
                 "and will use de-identified images.",
-                key=f"register_agree_{requested_role}",
+                key=f"agree_{requested_role}",
             )
 
             registered = st.form_submit_button(
-                (
-                    "Submit administrator application"
-                    if is_administrator
-                    else "Create account"
-                ),
+                "Create account",
                 type="primary",
                 use_container_width=True,
             )
@@ -234,13 +195,8 @@ with left:
                     )
 
                 if new_password != confirm:
-                    raise ValueError("The passwords do not match.")
-
-                if is_administrator and not (
-                    invitation_code or ""
-                ).strip():
                     raise ValueError(
-                        "Enter your administrator invitation code."
+                        "The passwords do not match."
                     )
 
                 if link_existing and (
@@ -248,8 +204,8 @@ with left:
                     or not linked_password
                 ):
                     raise ValueError(
-                        "Enter your existing account email and "
-                        "password to link your two accounts."
+                        "Enter your existing account email "
+                        "and password."
                     )
 
                 db.register(
@@ -258,11 +214,6 @@ with left:
                     password=new_password,
                     healthcare_center=healthcare_center,
                     requested_role=requested_role,
-                    invitation_code=(
-                        invitation_code.strip()
-                        if is_administrator
-                        else None
-                    ),
                     linked_account_email=(
                         linked_email if link_existing else None
                     ),
@@ -271,24 +222,16 @@ with left:
                     ),
                 )
 
-                if is_administrator:
-                    st.success(
-                        "Administrator application submitted. "
-                        "You can sign in once an administrator "
-                        "at your healthcare centre approves it."
-                    )
-                else:
-                    st.success(
-                        "Healthcare Worker account created. "
-                        "You can sign in now using the Sign in tab."
-                    )
+                st.success(
+                    f"{role_label} account created. "
+                    "Use the Sign in tab to continue."
+                )
 
             except ValueError as exc:
                 st.error(str(exc))
 
         st.caption(
-            "Entering a healthcare centre name does not verify "
-            "employment at that centre."
+            "Healthcare centre names are self-declared."
         )
 
 with right:
@@ -300,11 +243,11 @@ with right:
 
         **Analyse Image** — upload, preview and save a review
 
-        **History** — your saved records and CSV export
+        **History** — saved records and CSV export
 
-        **Account** — profile, healthcare centre and password settings
+        **Account** — profile and password settings
 
-        **Dataset Status** — cleaned dataset and database checks
+        **User Management** — administrator account controls
 
         **Help** — instructions and project scope
         """
