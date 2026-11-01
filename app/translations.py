@@ -1211,3 +1211,12 @@ CATALOG.update({
 })
 
 CATALOG.update({'Test images':'Picha za majaribio','Sensitivity':'Unyeti','Precision':'Usahihi wa utabiri chanya'})
+
+CATALOG.update({
+    'Can you clearly identify a skin lesion in this image?': 'Je, unaweza kuona wazi badiliko la ngozi katika picha hii?',
+    'Not sure': 'Sina uhakika',
+    'This is your visual assessment. The current model cannot automatically detect normal skin, benign lesions, or unrelated images.': 'Haya ni maoni yako baada ya kutazama picha. Modeli ya sasa haiwezi kutambua kiotomatiki ngozi ya kawaida, mabadiliko yasiyo ya saratani au picha zisizohusiana.',
+    'You indicated that no lesion is visible. Classification is blocked. Upload a clear lesion image to analyse.': 'Umeonyesha kuwa hakuna badiliko la ngozi linaloonekana. Uainishaji umezuiwa. Pakia picha inayoonyesha badiliko hilo wazi ili kuchanganua.',
+    'Lesion visibility is uncertain. Classification is blocked; obtain a clearer image or qualified review.': 'Kuonekana kwa badiliko la ngozi hakuko wazi. Uainishaji umezuiwa; pata picha iliyo wazi zaidi au uhakiki wa mtaalamu.',
+    'A historical prediction is saved in History. It does not establish that a lesion is present.': 'Utabiri wa awali umehifadhiwa katika Historia. Hauthibitishi kuwepo kwa badiliko la ngozi.',
+})

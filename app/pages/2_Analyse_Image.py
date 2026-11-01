@@ -38,10 +38,25 @@ with left:
         for key in ['upload_digest', 'review_key', 'saved_review']:
             st.session_state.pop(key, None)
 with right:
+    visibility = None
+    if image is not None:
+        # Bind this answer to the image digest so it cannot carry over to another upload.
+        visibility = st.radio(
+            t('Can you clearly identify a skin lesion in this image?'),
+            options=['Not sure', 'No', 'Yes'],
+            format_func=t,
+            key='lesion_visibility_' + digest,
+        )
+        st.caption(t('This is your visual assessment. The current model cannot automatically detect normal skin, benign lesions, or unrelated images.'))
+        if visibility == 'No':
+            st.warning(t('You indicated that no lesion is visible. Classification is blocked. Upload a clear lesion image to analyse.'))
+        elif visibility == 'Not sure':
+            st.info(t('Lesion visibility is uncertain. Classification is blocked; obtain a clearer image or qualified review.'))
+    visibility_confirmed = image is not None and visibility == 'Yes'
     reference = st.text_input(t('Optional case reference'), max_chars=80)
     consent = st.checkbox(t('Save a small preview and file metadata in my history.'))
     st.caption(t('The original image is not stored. A preview up to 320 × 320 pixels is retained when saved.'))
-    analyse = st.button(t('Analyse and save'), type='primary', disabled=image is None or not consent or not model_ready)
+    analyse = st.button(t('Analyse and save'), type='primary', disabled=not visibility_confirmed or not consent or not model_ready)
     save_only = st.button(t('Save without prediction'), disabled=image is None or not consent)
     if analyse or save_only:
         try:
@@ -52,18 +67,20 @@ with right:
                 with st.spinner(t('Analysing image...')):
                     existing = db.prediction_detail(user['id'], image_id)
                     if existing['status'] != 'predicted':
-                        result = predict_image(raw)
+                        result = predict_image(raw, lesion_confirmed=visibility_confirmed)
                         db.record_prediction(user['id'], image_id, digest, result)
         except ValueError as exc:
             st.error(t(str(exc)))
     if image is not None and st.session_state.get('saved_review'):
         result = db.prediction_detail(user['id'], st.session_state['saved_review'])
         st.success(t('Review saved to your history.'))
-        if result['status'] == 'predicted':
+        if result['status'] == 'predicted' and visibility_confirmed:
             st.metric(t('Predicted class'), result['cancer_class'])
             st.metric(t('Model score'), f"{result['confidence']:.1%}")
             st.bar_chart({t('Model score'): result['scores']})
             st.caption(t('Model version') + ': ' + result['model_name'])
+        elif result['status'] == 'predicted':
+            st.info(t('A historical prediction is saved in History. It does not establish that a lesion is present.'))
         else:
             st.info(t('Saved without a prediction. Upload the original image again to analyse it.'))
         st.page_link('pages/3_History.py', label=t('View saved history'))

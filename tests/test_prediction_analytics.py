@@ -82,9 +82,18 @@ class InferenceContract(unittest.TestCase):
             def __call__(self,inputs,training=False):return np.array([[.1,.8,.1]])
         out=io.BytesIO();Image.new('RGB',(10,10)).save(out,format='PNG')
         with patch.object(inference,'_load_model',return_value=(FakeModel(),threading.Lock())),patch.object(inference,'prepare_image',return_value=np.zeros((1,224,224,3))):
-            result=inference.predict_image(out.getvalue())
+            result=inference.predict_image(out.getvalue(), lesion_confirmed=True)
         self.assertEqual(result['scores']['Melanoma'],.8)
         self.assertEqual(result['model_sha256'],self.meta['model_sha256'])
     def test_mismatched_metrics_cannot_be_displayed_as_active_results(self):
         (self.folder/'test_metrics.json').write_text(json.dumps({'source_run_id':'other','model_sha256':'wrong'}))
         with self.assertRaises(ValueError):inference.evaluation_metrics()
+
+
+class VisibilityGate(unittest.TestCase):
+    def test_unconfirmed_images_do_not_reach_model_loading(self):
+        for answer in [False, None, 'Yes', 1]:
+            with self.subTest(answer=answer), patch.object(inference, '_load_model') as loader:
+                with self.assertRaisesRegex(ValueError, 'clearly visible lesion'):
+                    inference.predict_image(b'unused', lesion_confirmed=answer)
+                loader.assert_not_called()

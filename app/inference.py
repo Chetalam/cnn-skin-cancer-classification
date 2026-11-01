@@ -75,7 +75,9 @@ def prepare_image(raw, metadata):
     return tf.keras.applications.resnet50.preprocess_input(image)[None, ...]
 
 
-def predict_image(raw):
+def predict_image(raw, *, lesion_confirmed=False):
+    if lesion_confirmed is not True:
+        raise ValueError('A clearly visible lesion must be confirmed before experimental classification. This is a user check, not automated lesion detection.')
     # Reuse upload validation for byte size, genuine type and pixel-limit enforcement.
     from images import validate_image
     validate_image(raw)

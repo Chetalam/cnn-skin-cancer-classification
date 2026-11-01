@@ -13,7 +13,7 @@ if __name__ == '__main__':
     raw = (folder / 'reference_image.bin').read_bytes()
     if hashlib.sha256(raw).hexdigest() != reference['image_sha256'] or checksum != reference['model_sha256']:
         raise ValueError('Reference or model checksum mismatch.')
-    result = predict_image(raw)
+    result = predict_image(raw, lesion_confirmed=True)
     expected = np.load(folder / 'reference_scores.npy', allow_pickle=False)
     actual = np.array([[result['scores'][name] for name in metadata['class_names']]])
     np.testing.assert_allclose(actual, expected, rtol=1e-3, atol=1e-4)

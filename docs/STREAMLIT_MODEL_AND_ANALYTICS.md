@@ -70,3 +70,9 @@ Streamlit AppTest smoke checks passed for the sign-in page, authenticated Analyt
 ## Chart compatibility fix
 
 PyArrow is pinned to 19.0.1 alongside NumPy 1.26.4. An unpinned newer PyArrow can require NumPy 2 at runtime even when pip's dependency resolver accepts the installation. After pulling this change, stop Streamlit, activate the project .venv, run `python -m pip install -r app/requirements.txt`, and restart Streamlit. No model export, database replacement or retraining is required. A regression test renders the actual prediction bar chart, analytics line chart and dataframe rather than checking imports alone.
+
+## Lesion visibility gate
+
+Before Analyse and save is enabled, the worker must explicitly select Yes to a visible-lesion question. The default is Not sure; No and Not sure block inference. The choice is keyed to the uploaded image digest. The inference function also requires the explicit boolean confirmation. Saving without classification remains possible.
+
+This gate is a user assessment, not automated lesion detection. The classifier contains only BCC, Melanoma and SCC; it cannot identify healthy skin, benign lesions or unrelated images. A high softmax score cannot establish a lesion's presence. Automatic rejection requires a separately trained and validated suitability/lesion detector or an appropriate expanded classifier with verified negative examples. Do not relabel HAM benign cases as “no lesion”: benign lesions and normal skin are different categories. Historical predictions are retained and do not become evidence of lesion presence.
