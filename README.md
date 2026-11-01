@@ -65,3 +65,7 @@ python -m unittest discover -s tests -v
 ```
 
 Checks cover account/ownership boundaries, deactivation/retention, migration relationships, notebook syntax and metadata aggregation. They do not execute GPU training, establish diagnostic performance or replace browser testing. Keep datasets, model weights, databases, backups and secrets out of ordinary Git commits.
+
+## SCC and Fitzpatrick follow-up
+
+Experiment 6 achieved 87.50% test accuracy and 0.736995 macro F1; SCC sensitivity was 10/29 (34.48%). Requirements remain unmet. See [reported results](docs/EXPERIMENT_6_RESULTS.md). Run [notebook 08](notebooks/08_scc_decision_and_fitzpatrick_audit.ipynb) for the validation-only SCC decision experiment and recorded Fitzpatrick audit. It does not retrain or change the existing model.
