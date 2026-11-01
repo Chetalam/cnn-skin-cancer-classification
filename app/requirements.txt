@@ -4,3 +4,4 @@ numpy==1.26.4
 pandas==2.2.3
 tensorflow==2.21.0
 keras==3.13.2
+pyarrow==19.0.1

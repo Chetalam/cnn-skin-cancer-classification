@@ -66,3 +66,7 @@ Keep the app's installed model fixed while training writes to different Drive ru
 Local source compilation and 20 isolated database/inference-contract tests passed. Dependency resolution passed. Inference-contract tests use a stub model because the private trained artifact is not available in the coding environment. Real checkpoint parity must pass on the user's machine before a demonstration; no claim of actual inference parity is made until then. No new performance targets are declared met.
 
 Streamlit AppTest smoke checks passed for the sign-in page, authenticated Analytics, and Analyse Image with the model unavailable. The actual private model has not been exercised in this environment.
+
+## Chart compatibility fix
+
+PyArrow is pinned to 19.0.1 alongside NumPy 1.26.4. An unpinned newer PyArrow can require NumPy 2 at runtime even when pip's dependency resolver accepts the installation. After pulling this change, stop Streamlit, activate the project .venv, run `python -m pip install -r app/requirements.txt`, and restart Streamlit. No model export, database replacement or retraining is required. A regression test renders the actual prediction bar chart, analytics line chart and dataframe rather than checking imports alone.
