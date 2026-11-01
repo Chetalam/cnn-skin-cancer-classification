@@ -18,10 +18,12 @@ if start > end:
 start_ts = datetime.combine(start, time.min, tzinfo=timezone.utc).timestamp()
 end_ts = datetime.combine(end+timedelta(days=1), time.min, tzinfo=timezone.utc).timestamp()
 data = db.analytics(user['id'], start_ts, end_ts)
-a,b,c = st.columns(3)
+a,b,c,d = st.columns(4)
 a.metric(t('Saved reviews'), data['total'])
 b.metric(t('Completed predictions'), data['predicted'])
 c.metric(t('Awaiting model'), data['awaiting'])
+d.metric(t('Archived reviews'), data['archived'])
+st.caption(t('Analytics includes archived reviews because their data remains stored.'))
 st.caption(t('Review dates use UTC. Activity counts do not measure diagnostic accuracy or cancer prevalence.'))
 if data['total']:
     st.subheader(t('Reviews over time'))

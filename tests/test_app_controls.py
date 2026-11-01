@@ -42,7 +42,7 @@ class AccountControls(unittest.TestCase):
             self.assertEqual(connection.execute("PRAGMA foreign_keys").fetchone()[0], 1)
             self.assertFalse(connection.execute("PRAGMA foreign_key_check").fetchall())
 
-    def test_review_ownership_and_cascade_delete(self):
+    def test_review_ownership_and_archive_retention(self):
         image_id = self.review()
         self.assertEqual(db.history(self.outsider), [])
         self.assertIsNone(db.get_thumbnail(self.outsider, image_id))
@@ -53,7 +53,10 @@ class AccountControls(unittest.TestCase):
         self.assertEqual(db.history(self.worker)[0]["case_reference"], "updated")
         self.assertEqual(db.delete_review(self.worker, image_id), 1)
         with db.connect() as connection:
-            self.assertEqual(connection.execute("SELECT COUNT(*) FROM prediction_results").fetchone()[0], 0)
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM prediction_results").fetchone()[0], 1)
+        self.assertEqual(db.history(self.worker), [])
+        self.assertEqual(len(db.history(self.worker, view='archived')), 1)
+        self.assertEqual(db.restore_review(self.worker, image_id), 1)
 
     def test_administrator_cannot_use_review_functions(self):
         image_id = self.review()

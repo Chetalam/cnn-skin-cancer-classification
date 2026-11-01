@@ -44,7 +44,7 @@ class PredictionAnalytics(unittest.TestCase):
             self.assertEqual(c.execute('SELECT COUNT(*) FROM model_versions').fetchone()[0],1)
             self.assertFalse(c.execute('PRAGMA foreign_key_check').fetchall())
         db.delete_review(self.worker,image)
-        with db.connect() as c:self.assertEqual(c.execute('SELECT COUNT(*) FROM prediction_scores').fetchone()[0],0)
+        with db.connect() as c:self.assertEqual(c.execute('SELECT COUNT(*) FROM prediction_scores').fetchone()[0],3)
     def test_analytics_scope_and_no_personal_fields(self):
         image=self.review(self.worker,'one');self.review(self.peer,'two');self.review(self.outside,'three')
         db.record_prediction(self.worker,image,'a'*64,self.result)

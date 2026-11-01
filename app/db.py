@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS skin_lesion_images (
  request_key TEXT NOT NULL UNIQUE, case_reference TEXT NOT NULL,
  file_name TEXT NOT NULL, image_sha256 TEXT NOT NULL,
  width INTEGER NOT NULL CHECK(width>0), height INTEGER NOT NULL CHECK(height>0),
- thumbnail BLOB NOT NULL, uploaded_at INTEGER NOT NULL
+ thumbnail BLOB NOT NULL, uploaded_at INTEGER NOT NULL, archived_at INTEGER
 );
 CREATE TABLE IF NOT EXISTS prediction_results (
  id INTEGER PRIMARY KEY, image_id INTEGER NOT NULL UNIQUE REFERENCES skin_lesion_images(id) ON DELETE CASCADE,
@@ -145,6 +145,24 @@ def initialize():
                 conn.execute('PRAGMA foreign_keys=ON')
         conn.executemany('INSERT OR IGNORE INTO cancer_classes VALUES (?,?)', [
             ('Melanoma','Melanoma'),('BCC','Basal Cell Carcinoma'),('SCC','Squamous Cell Carcinoma')])
+
+    # Additive migration: retain every existing review, thumbnail and prediction.
+    with connect() as conn:
+        columns = {r['name'] for r in conn.execute('PRAGMA table_info(skin_lesion_images)')}
+        if 'archived_at' not in columns:
+            backup_folder = DB_PATH.parent / 'backups'
+            backup_folder.mkdir(parents=True, exist_ok=True)
+            backup_path = backup_folder / (DB_PATH.stem + f'.before_review_archiving_{time.time_ns()}.db')
+            with sqlite3.connect(backup_path) as backup:
+                conn.backup(backup)
+        conn.execute('BEGIN IMMEDIATE')
+        columns = {r['name'] for r in conn.execute('PRAGMA table_info(skin_lesion_images)')}
+        if 'archived_at' not in columns:
+            conn.execute('ALTER TABLE skin_lesion_images ADD COLUMN archived_at INTEGER')
+        conn.execute("""CREATE TRIGGER IF NOT EXISTS retain_review_records
+            BEFORE DELETE ON skin_lesion_images
+            BEGIN SELECT RAISE(ABORT, 'Reviews must be archived, not permanently deleted.'); END""")
+        conn.execute('INSERT OR IGNORE INTO schema_version VALUES (7,?)', (int(time.time()),))
 
 
 def normalize_email(email):
@@ -357,10 +375,12 @@ def save_review(user_id, request_key, case_reference, file_name, image, raw_dige
     now = int(time.time())
     with connect() as conn:
         require_healthcare_worker(conn,user_id)
-        existing = conn.execute('SELECT id,user_id FROM skin_lesion_images WHERE request_key=?', (request_key,)).fetchone()
+        existing = conn.execute('SELECT id,user_id,archived_at FROM skin_lesion_images WHERE request_key=?', (request_key,)).fetchone()
         if existing:
             if existing['user_id'] != user_id:
                 raise ValueError('Record unavailable.')
+            if existing['archived_at'] is not None:
+                raise ValueError('This review is archived. Restore it in Review Records before changing it.')
             return existing['id']
         cursor = conn.execute('INSERT INTO skin_lesion_images(user_id,request_key,case_reference,file_name,image_sha256,width,height,thumbnail,uploaded_at) VALUES (?,?,?,?,?,?,?,?,?)',
             (user_id,request_key,case_reference.strip()[:80],file_name.replace('\\\\','/').split('/')[-1][:200],raw_digest,image.width,image.height,out.getvalue(),now))
@@ -368,22 +388,40 @@ def save_review(user_id, request_key, case_reference, file_name, image, raw_dige
         conn.execute("INSERT INTO prediction_results(image_id,status,created_at) VALUES (?,'awaiting_model',?)", (image_id,now))
         audit(conn,user_id,'image_review_saved')
         return image_id
-def history(user_id):
+def history(user_id, view='active'):
+    if view not in {'active', 'archived', 'all'}:
+        raise ValueError('Choose active, archived or all reviews.')
+    condition = {'active': ' AND i.archived_at IS NULL', 'archived': ' AND i.archived_at IS NOT NULL', 'all': ''}[view]
     with connect() as conn:
         require_healthcare_worker(conn,user_id)
-        return [dict(r) for r in conn.execute('SELECT i.id,i.case_reference,i.file_name,i.width,i.height,i.uploaded_at,p.status,p.cancer_class,p.confidence,m.name AS model_name,p.created_at AS predicted_at FROM skin_lesion_images i JOIN prediction_results p ON p.image_id=i.id LEFT JOIN model_versions m ON m.id=p.model_id WHERE i.user_id=? ORDER BY i.uploaded_at DESC,i.id DESC', (user_id,))]
+        return [dict(r) for r in conn.execute('SELECT i.id,i.case_reference,i.file_name,i.width,i.height,i.uploaded_at,i.archived_at,p.status,p.cancer_class,p.confidence,m.name AS model_name,p.created_at AS predicted_at FROM skin_lesion_images i JOIN prediction_results p ON p.image_id=i.id LEFT JOIN model_versions m ON m.id=p.model_id WHERE i.user_id=?' + condition + ' ORDER BY i.uploaded_at DESC,i.id DESC', (user_id,))]
 def get_thumbnail(user_id, image_id):
     with connect() as conn:
         require_healthcare_worker(conn,user_id)
         row = conn.execute('SELECT thumbnail FROM skin_lesion_images WHERE user_id=? AND id=?', (user_id,image_id)).fetchone()
         return row['thumbnail'] if row else None
-def delete_review(user_id, image_id):
+def archive_review(user_id, image_id):
     with connect() as conn:
         require_healthcare_worker(conn,user_id)
-        cursor = conn.execute('DELETE FROM skin_lesion_images WHERE id=? AND user_id=?', (image_id,user_id))
+        cursor = conn.execute('UPDATE skin_lesion_images SET archived_at=? WHERE id=? AND user_id=? AND archived_at IS NULL', (int(time.time()), image_id,user_id))
         if cursor.rowcount:
-            audit(conn,user_id,'image_review_deleted')
+            audit(conn,user_id,'image_review_archived')
         return cursor.rowcount
+
+
+def restore_review(user_id, image_id):
+    with connect() as conn:
+        require_healthcare_worker(conn,user_id)
+        cursor = conn.execute('UPDATE skin_lesion_images SET archived_at=NULL WHERE id=? AND user_id=? AND archived_at IS NOT NULL', (image_id,user_id))
+        if cursor.rowcount:
+            audit(conn,user_id,'image_review_restored')
+        return cursor.rowcount
+
+
+def delete_review(user_id, image_id):
+    """Compatibility alias: legacy callers now archive and never delete rows."""
+    return archive_review(user_id, image_id)
+
 def require_system_administrator(conn, user_id):
     row = require_active_user(conn,user_id)
     if not row or row['role'] != 'system_administrator':
@@ -449,7 +487,7 @@ def update_review(user_id, image_id, case_reference):
     with connect() as conn:
         conn.execute('BEGIN IMMEDIATE')
         require_healthcare_worker(conn,user_id)
-        result = conn.execute('UPDATE skin_lesion_images SET case_reference=? WHERE id=? AND user_id=?',
+        result = conn.execute('UPDATE skin_lesion_images SET case_reference=? WHERE id=? AND user_id=? AND archived_at IS NULL',
                               (value,image_id,user_id))
         if not result.rowcount:
             raise ValueError('Review unavailable.')
@@ -534,6 +572,8 @@ def record_prediction(user_id, image_id, raw_digest, result):
         image = conn.execute('SELECT * FROM skin_lesion_images WHERE id=? AND user_id=?', (image_id, user_id)).fetchone()
         if image is None or not hmac.compare_digest(image['image_sha256'], raw_digest):
             raise ValueError('Prediction image does not match your saved review.')
+        if image['archived_at'] is not None:
+            raise ValueError('Restore this archived review before adding a prediction.')
         prediction = conn.execute('SELECT * FROM prediction_results WHERE image_id=?', (image_id,)).fetchone()
         if prediction['status'] == 'predicted':
             return prediction['id']  # Never silently replace a historical prediction.
@@ -574,7 +614,7 @@ def analytics(user_id, start_time=0, end_time=32503680000):
         else:
             require_healthcare_worker(conn, user_id)
             scope, parameters = 'i.user_id=?', [user_id]
-        rows = conn.execute('SELECT i.uploaded_at,p.status,p.cancer_class,p.confidence,m.name AS model_name FROM skin_lesion_images i JOIN users u ON u.id=i.user_id JOIN prediction_results p ON p.image_id=i.id LEFT JOIN model_versions m ON m.id=p.model_id WHERE ' + scope + ' AND i.uploaded_at>=? AND i.uploaded_at<?', parameters + [int(start_time), int(end_time)]).fetchall()
+        rows = conn.execute('SELECT i.uploaded_at,i.archived_at,p.status,p.cancer_class,p.confidence,m.name AS model_name FROM skin_lesion_images i JOIN users u ON u.id=i.user_id JOIN prediction_results p ON p.image_id=i.id LEFT JOIN model_versions m ON m.id=p.model_id WHERE ' + scope + ' AND i.uploaded_at>=? AND i.uploaded_at<?', parameters + [int(start_time), int(end_time)]).fetchall()
         daily, classes, versions = {}, {}, {}
         score_bins = {'0–49%': 0, '50–69%': 0, '70–89%': 0, '90–100%': 0}
         predicted = 0
@@ -589,5 +629,5 @@ def analytics(user_id, start_time=0, end_time=32503680000):
                 score = row['confidence']
                 bucket = '0–49%' if score < .5 else '50–69%' if score < .7 else '70–89%' if score < .9 else '90–100%'
                 score_bins[bucket] += 1
-        return dict(total=len(rows), predicted=predicted, awaiting=len(rows)-predicted,
+        return dict(total=len(rows), archived=sum(r['archived_at'] is not None for r in rows), predicted=predicted, awaiting=len(rows)-predicted,
                     daily=dict(sorted(daily.items())), classes=classes, model_versions=versions, score_bins=score_bins)
