@@ -14,7 +14,7 @@ if user:
     open_account_page(user)
 st.title(t('Welcome to SkinCare Research'))
 st.write(t('A workspace for skin lesion image review and CNN classification research.'))
-st.info(t('Register or sign in to access your dashboard. Predictions will become available after model integration.'))
+st.info(t('Register or sign in to access your dashboard. Predictions use an experimental checkpoint when installed. Performance requirements remain unmet.'))
 flash()
 left, right = st.columns([1.15, 1], gap='large')
 with left:

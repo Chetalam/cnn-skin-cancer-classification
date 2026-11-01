@@ -10,6 +10,7 @@ class NotebookSyntax(unittest.TestCase):
         self.check_notebook(path)
         self.check_notebook(path.with_name("08_scc_decision_and_fitzpatrick_audit.ipynb"))
         self.check_notebook(path.with_name("09_external_clinical_data_training.ipynb"))
+        self.check_notebook(path.with_name("10_export_streamlit_model.ipynb"))
 
     def check_notebook(self, path):
         notebook = json.loads(path.read_text(encoding="utf-8"))

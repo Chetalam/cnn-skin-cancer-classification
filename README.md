@@ -69,3 +69,7 @@ Checks cover account/ownership boundaries, deactivation/retention, migration rel
 ## SCC and Fitzpatrick follow-up
 
 Experiment 6 achieved 87.50% test accuracy and 0.736995 macro F1; SCC sensitivity was 10/29 (34.48%). Requirements remain unmet. See [reported results](docs/EXPERIMENT_6_RESULTS.md). Run [notebook 08](notebooks/08_scc_decision_and_fitzpatrick_audit.ipynb) for the validation-only SCC decision experiment and recorded Fitzpatrick audit. It does not retrain or change the existing model.
+
+## Experimental app inference and analytics
+
+[Installation and model transfer](docs/STREAMLIT_MODEL_AND_ANALYTICS.md). Export the completed checkpoint using notebook 10, verify local parity, then run Streamlit. Analytics reports own-worker or centre-admin aggregates and separately labelled historical evaluation metrics. Inference remains experimental; performance requirements remain unmet.

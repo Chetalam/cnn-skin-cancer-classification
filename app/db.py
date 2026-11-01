@@ -371,7 +371,7 @@ def save_review(user_id, request_key, case_reference, file_name, image, raw_dige
 def history(user_id):
     with connect() as conn:
         require_healthcare_worker(conn,user_id)
-        return [dict(r) for r in conn.execute('SELECT i.id,i.case_reference,i.file_name,i.width,i.height,i.uploaded_at,p.status,p.cancer_class,p.confidence FROM skin_lesion_images i JOIN prediction_results p ON p.image_id=i.id WHERE i.user_id=? ORDER BY i.uploaded_at DESC,i.id DESC', (user_id,))]
+        return [dict(r) for r in conn.execute('SELECT i.id,i.case_reference,i.file_name,i.width,i.height,i.uploaded_at,p.status,p.cancer_class,p.confidence,m.name AS model_name,p.created_at AS predicted_at FROM skin_lesion_images i JOIN prediction_results p ON p.image_id=i.id LEFT JOIN model_versions m ON m.id=p.model_id WHERE i.user_id=? ORDER BY i.uploaded_at DESC,i.id DESC', (user_id,))]
 def get_thumbnail(user_id, image_id):
     with connect() as conn:
         require_healthcare_worker(conn,user_id)
@@ -517,3 +517,77 @@ def require_healthcare_worker(conn, user_id):
     if user['role'] != 'healthcare_worker':
         raise ValueError('Image reviews are available only through a Healthcare Worker account. Sign in with your separate Healthcare Worker credentials.')
     return user
+
+def record_prediction(user_id, image_id, raw_digest, result):
+    """Attach one immutable, model-versioned result to an owned saved image."""
+    labels = ['BCC', 'Melanoma', 'SCC']
+    scores = result.get('scores', {})
+    if set(scores) != set(labels) or any(type(v) not in {int, float} or not math.isfinite(v) or not 0 <= v <= 1 for v in scores.values()) or not math.isclose(sum(scores.values()), 1, abs_tol=1e-5):
+        raise ValueError('Invalid prediction scores.')
+    checksum = result.get('model_sha256', '')
+    if not re.fullmatch(r'[a-f0-9]{64}', checksum):
+        raise ValueError('Invalid model checksum.')
+    name = result['model_name'] + ' / ' + result['run_id'] + ' / ' + checksum
+    with connect() as conn:
+        conn.execute('BEGIN IMMEDIATE')
+        require_healthcare_worker(conn, user_id)
+        image = conn.execute('SELECT * FROM skin_lesion_images WHERE id=? AND user_id=?', (image_id, user_id)).fetchone()
+        if image is None or not hmac.compare_digest(image['image_sha256'], raw_digest):
+            raise ValueError('Prediction image does not match your saved review.')
+        prediction = conn.execute('SELECT * FROM prediction_results WHERE image_id=?', (image_id,)).fetchone()
+        if prediction['status'] == 'predicted':
+            return prediction['id']  # Never silently replace a historical prediction.
+        model = conn.execute('SELECT id FROM model_versions WHERE name=?', (name,)).fetchone()
+        if model is None:
+            cursor = conn.execute('INSERT INTO model_versions(name,artifact_path,class_order,preprocessing,created_at) VALUES (?,?,?,?,?)',
+                                  (name, result['artifact_path'], json.dumps(labels), result['preprocessing'], int(time.time())))
+            model_id = cursor.lastrowid
+        else:
+            model_id = model['id']
+        winner = max(labels, key=lambda key: scores[key])
+        conn.execute("UPDATE prediction_results SET status='predicted',cancer_class=?,confidence=?,model_id=?,created_at=? WHERE id=?",
+                     (winner, scores[winner], model_id, int(time.time()), prediction['id']))
+        conn.executemany('INSERT INTO prediction_scores(prediction_id,cancer_class,score) VALUES (?,?,?)',
+                         [(prediction['id'], label, scores[label]) for label in labels])
+        audit(conn, user_id, 'experimental_prediction_saved')
+        return prediction['id']
+
+
+def prediction_detail(user_id, image_id):
+    with connect() as conn:
+        require_healthcare_worker(conn, user_id)
+        row = conn.execute('SELECT p.*,m.name AS model_name FROM prediction_results p JOIN skin_lesion_images i ON i.id=p.image_id LEFT JOIN model_versions m ON m.id=p.model_id WHERE i.id=? AND i.user_id=?', (image_id, user_id)).fetchone()
+        if row is None:
+            raise ValueError('Record unavailable.')
+        result = dict(row)
+        result['scores'] = {r['cancer_class']: r['score'] for r in conn.execute('SELECT cancer_class,score FROM prediction_scores WHERE prediction_id=?', (row['id'],))}
+        return result
+
+
+def analytics(user_id, start_time=0, end_time=32503680000):
+    """Aggregates only: worker's own reviews or administrator's centre."""
+    with connect() as conn:
+        actor = require_active_user(conn, user_id)
+        if actor['role'] == 'system_administrator':
+            actor = require_system_administrator(conn, user_id)
+            scope, parameters = 'u.center_key=?', [actor['center_key']]
+        else:
+            require_healthcare_worker(conn, user_id)
+            scope, parameters = 'i.user_id=?', [user_id]
+        rows = conn.execute('SELECT i.uploaded_at,p.status,p.cancer_class,p.confidence,m.name AS model_name FROM skin_lesion_images i JOIN users u ON u.id=i.user_id JOIN prediction_results p ON p.image_id=i.id LEFT JOIN model_versions m ON m.id=p.model_id WHERE ' + scope + ' AND i.uploaded_at>=? AND i.uploaded_at<?', parameters + [int(start_time), int(end_time)]).fetchall()
+        daily, classes, versions = {}, {}, {}
+        score_bins = {'0–49%': 0, '50–69%': 0, '70–89%': 0, '90–100%': 0}
+        predicted = 0
+        for row in rows:
+            day = time.strftime('%Y-%m-%d', time.gmtime(row['uploaded_at']))
+            daily[day] = daily.get(day, 0) + 1
+            if row['status'] == 'predicted':
+                predicted += 1
+                classes[row['cancer_class']] = classes.get(row['cancer_class'], 0) + 1
+                version = row['model_name'] or 'Unknown'
+                versions[version] = versions.get(version, 0) + 1
+                score = row['confidence']
+                bucket = '0–49%' if score < .5 else '50–69%' if score < .7 else '70–89%' if score < .9 else '90–100%'
+                score_bins[bucket] += 1
+        return dict(total=len(rows), predicted=predicted, awaiting=len(rows)-predicted,
+                    daily=dict(sorted(daily.items())), classes=classes, model_versions=versions, score_bins=score_bins)

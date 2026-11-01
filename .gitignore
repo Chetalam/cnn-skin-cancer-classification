@@ -43,3 +43,8 @@ app/storage/
 Models/
 Datasets/
 Reports/
+
+# Private deployed checkpoints and parity fixtures
+app/models/active/
+
+.venv/

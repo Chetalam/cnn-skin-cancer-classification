@@ -29,7 +29,7 @@ else:
     st.subheader(t('Start a review'))
     st.write(t('Upload a de-identified lesion image, check the preview and save a review.'))
     st.page_link('pages/2_Analyse_Image.py', label=t('Open Analyse Image'), icon='🔬')
-    st.info(t('The CNN is not integrated. Newly saved reviews await the model and have no predicted class or confidence.'))
+    st.info(t('A completed checkpoint can be used for experimental predictions. SCC and skin-type performance requirements remain unmet.'))
     st.subheader(t('Your recent reviews'))
     if rows:
         recent_reviews = [{'Case reference': row['case_reference'] or '—', 'File': row['file_name'], 'Status': 'Awaiting model' if row['status'] == 'awaiting_model' else 'Predicted', 'Saved': timestamp(row['uploaded_at'])} for row in rows[:5]]

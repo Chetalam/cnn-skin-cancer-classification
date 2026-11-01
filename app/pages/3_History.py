@@ -13,7 +13,7 @@ if not rows:
     st.info(t('No saved reviews yet.'))
     st.page_link('pages/2_Analyse_Image.py', label=t('Upload your first image'))
     st.stop()
-display_rows = [{'Record': r['id'], 'Case reference': r['case_reference'] or '—', 'File': r['file_name'], 'Status': 'Awaiting model' if r['status'] == 'awaiting_model' else 'Predicted', 'Class': r['cancer_class'] or 'Unavailable', 'Confidence': f"{r['confidence']:.1%}" if r['confidence'] is not None else 'Unavailable', 'Saved': timestamp(r['uploaded_at'])} for r in rows]
+display_rows = [{'Record': r['id'], 'Case reference': r['case_reference'] or '—', 'File': r['file_name'], 'Status': 'Awaiting model' if r['status'] == 'awaiting_model' else 'Predicted', 'Class': r['cancer_class'] or 'Unavailable', 'Model score': f"{r['confidence']:.1%}" if r['confidence'] is not None else 'Unavailable', 'Saved': timestamp(r['uploaded_at'])} for r in rows]
 st.dataframe(display_data(display_rows), hide_index=True, use_container_width=True)
 
 def safe_cell(value):
@@ -45,3 +45,9 @@ with right:
             st.rerun()
         except ValueError as exc:
             st.error(t(str(exc)))
+
+if row['status'] == 'predicted':
+    detail = db.prediction_detail(user['id'], selected)
+    st.caption(t('Model version') + ': ' + detail['model_name'])
+    st.bar_chart({t('Model score'): detail['scores']})
+    st.caption(t('Model scores are uncalibrated and do not represent diagnostic accuracy.'))

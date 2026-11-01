@@ -1166,3 +1166,48 @@ def display_data(value):
 
 def translated_format(formatter):
     return lambda value: t(formatter(value))
+# Experimental inference and analytics display labels.
+CATALOG.update({
+    'Analytics': 'Uchanganuzi',
+    'Active model': 'Modeli inayotumika',
+    'Analyse and save': 'Changanua na uhifadhi',
+    'Save without prediction': 'Hifadhi bila utabiri',
+    'Analysing image...': 'Picha inachanganuliwa...',
+    'Predicted class': 'Aina iliyotabiriwa',
+    'Model score': 'Alama ya modeli',
+    'Model version': 'Toleo la modeli',
+    'Model versions used': 'Matoleo ya modeli yaliyotumika',
+    'Model score distribution': 'Mgawanyo wa alama za modeli',
+    'Healthcare centre aggregate activity': 'Jumla ya shughuli za kituo cha afya',
+    'Your review activity': 'Shughuli zako za mapitio',
+    'From date': 'Kuanzia tarehe',
+    'To date': 'Hadi tarehe',
+    'The start date must not be after the end date.': 'Tarehe ya kuanza isiwe baada ya tarehe ya mwisho.',
+    'Saved reviews': 'Mapitio yaliyohifadhiwa',
+    'Awaiting model': 'Inasubiri modeli',
+    'Reviews over time': 'Mapitio kwa tarehe',
+    'Predicted classes': 'Aina zilizotabiriwa',
+    'Predictions': 'Utabiri',
+    'Active model evaluation': 'Tathmini ya modeli inayotumika',
+    'Source run': 'Jaribio la chanzo',
+    'Test accuracy': 'Usahihi wa majaribio',
+    'Test macro F1': 'Wastani wa F1 wa majaribio',
+    'No reviews in the selected date range.': 'Hakuna mapitio katika kipindi kilichochaguliwa.',
+    'No matching evaluation report is installed.': 'Hakuna ripoti ya tathmini inayolingana iliyowekwa.',
+    'Model evaluation unavailable.': 'Tathmini ya modeli haipatikani.',
+    'Experimental model: SCC performance and darker-skin reliability requirements are not met. Scores are not a diagnosis or a calibrated cancer risk.': 'Modeli ya majaribio: mahitaji ya utendaji wa SCC na kutegemewa kwa ngozi nyeusi zaidi hayajatimizwa. Alama si utambuzi wala kipimo kilichothibitishwa cha hatari ya saratani.',
+    'Model scores are uncalibrated and do not represent diagnostic accuracy.': 'Alama za modeli hazijarekebishwa kuwa uwezekano uliothibitishwa na haziwakilishi usahihi wa utambuzi.',
+    'Review dates use UTC. Activity counts do not measure diagnostic accuracy or cancer prevalence.': 'Tarehe za mapitio hutumia UTC. Idadi ya shughuli haipimi usahihi wa utambuzi wala kuenea kwa saratani.',
+    'Held-out development results are separate from live app activity. This test set was previously inspected.': 'Matokeo ya tathmini ya utengenezaji ni tofauti na shughuli za programu. Seti hii ya majaribio ilishakaguliwa hapo awali.',
+    'Saved without a prediction. Upload the original image again to analyse it.': 'Imehifadhiwa bila utabiri. Pakia tena picha ya asili ili kuichanganua.',
+    'Preview orientation may follow EXIF metadata. Inference uses the original orientation to match training.': 'Mwelekeo wa hakiki unaweza kufuata taarifa za EXIF. Utabiri hutumia mwelekeo wa asili ili ulingane na mafunzo.',
+    'A completed checkpoint can be used for experimental predictions. SCC and skin-type performance requirements remain unmet.': 'Modeli iliyokamilisha mafunzo inaweza kutumika kwa utabiri wa majaribio. Mahitaji ya SCC na utendaji kwa aina za ngozi bado hayajatimizwa.',
+})
+
+CATALOG.update({
+    'Analytics shows activity and prediction counts. Workers see their own records; administrators see centre aggregates. It does not measure live diagnostic accuracy.': 'Uchanganuzi unaonyesha idadi ya shughuli na utabiri. Wahudumu huona rekodi zao; wasimamizi huona jumla za kituo. Hupimi usahihi wa utambuzi wa moja kwa moja.',
+    'Register or sign in to access your dashboard. Predictions use an experimental checkpoint when installed. Performance requirements remain unmet.': 'Jisajili au ingia ili kufikia dashibodi. Utabiri hutumia modeli ya majaribio inapowekwa. Mahitaji ya utendaji bado hayajatimizwa.',
+    'Open Analyse Image, upload a supported de-identified image and save the preview. History contains only your own reviews and supports CSV export. Use Analyse and save for an experimental prediction when a verified checkpoint is installed. Save without prediction retains an awaiting-model record. Model scores are not a diagnosis.': 'Fungua Changanua Picha, pakia picha isiyo na utambulisho na uhifadhi hakiki. Historia ina mapitio yako pekee na inaweza kupakuliwa kama CSV. Chagua Changanua na uhifadhi kwa utabiri wa majaribio ikiwa modeli iliyothibitishwa imewekwa. Kuhifadhi bila utabiri huacha rekodi ikisubiri modeli. Alama za modeli si utambuzi.',
+})
+
+CATALOG.update({'Test images':'Picha za majaribio','Sensitivity':'Unyeti','Precision':'Usahihi wa utabiri chanya'})

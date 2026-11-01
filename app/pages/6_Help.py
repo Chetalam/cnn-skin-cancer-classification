@@ -9,7 +9,7 @@ with st.expander(t('Deactivation and reactivation')):
     st.write(t('Open Account → Deactivate profile. Enter your current password and confirm. Your profile and reviews remain saved. An active administrator at your centre can reactivate your account. The last active administrator at a centre cannot self-deactivate.'))
 if user['role'] == 'healthcare_worker':
     with st.expander(t('Create and view reviews')):
-        st.write(t('Open Analyse Image, upload a supported de-identified image and save the preview. History contains only your own reviews and supports CSV export. Model integration is pending; awaiting-model records are not predictions.'))
+        st.write(t('Open Analyse Image, upload a supported de-identified image and save the preview. History contains only your own reviews and supports CSV export. Use Analyse and save for an experimental prediction when a verified checkpoint is installed. Save without prediction retains an awaiting-model record. Model scores are not a diagnosis.'))
     with st.expander(t('Update or delete a review')):
         st.write(t('Open Review Records to update a case reference or permanently delete one of your own reviews. Deletion cannot be undone.'))
 else:
@@ -18,3 +18,6 @@ else:
     with st.expander(t('Image reviews')):
         st.write(t("Sign out and use your separate Healthcare Worker account to upload images or access review history. Administrator access does not expose other users' private reviews. Previously saved administrator reviews remain retained in the database."))
 disclaimer()
+
+with st.expander(t('Analytics')):
+    st.write(t('Analytics shows activity and prediction counts. Workers see their own records; administrators see centre aggregates. It does not measure live diagnostic accuracy.'))
