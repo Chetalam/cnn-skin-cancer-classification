@@ -9,7 +9,7 @@ from ui import setup, disclaimer
 user = setup('Analyse Image')
 st.title(t('Analyse a skin lesion image'))
 disclaimer()
-st.warning(t('Experimental model: SCC performance and darker-skin reliability requirements are not met. Scores are not a diagnosis or a calibrated cancer risk.'))
+st.warning(t('Experimental model. Scores are not a diagnosis or a calibrated cancer risk.'))
 try:
     _, model_metadata, _ = inspect_package()
     model_ready = True

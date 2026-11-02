@@ -63,6 +63,6 @@ try:
                     'precision': t('Precision'), 'sensitivity_recall': t('Sensitivity'),
                     'f1_score': 'F1',
                 }), hide_index=True)
-        st.warning(t('Experimental model: SCC performance and darker-skin reliability requirements are not met. Scores are not a diagnosis or a calibrated cancer risk.'))
+        st.warning(t('Experimental model. Scores are not a diagnosis or a calibrated cancer risk.'))
 except (ValueError, KeyError, OSError) as exc:
     st.info(t('Model evaluation unavailable.') + ' ' + str(exc))

@@ -1247,3 +1247,7 @@ CATALOG.update({
     'This review is archived. Restore it in Review Records before changing it.': 'Pitio hili lipo kwenye kumbukumbu. Lirejeshe katika Rekodi za Mapitio kabla ya kulibadilisha.',
     'Restore this archived review before adding a prediction.': 'Rejesha pitio hili kutoka kwenye kumbukumbu kabla ya kuongeza utabiri.',
 })
+
+CATALOG.update({
+    "Experimental model. Scores are not a diagnosis or a calibrated cancer risk.": "Modeli ya majaribio. Alama si utambuzi wala kipimo kilichothibitishwa cha hatari ya saratani."
+})
