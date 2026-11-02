@@ -1,44 +1,51 @@
+"""Public archive integrity and corrected-partition selection; no network in tests."""
 import ast
 import hashlib
+import io
 import json
 from pathlib import Path
 import tempfile
 import unittest
-from urllib.parse import urlparse
+from unittest.mock import patch
+import urllib.request
 import numpy as np
+import pandas as pd
 from PIL import Image
-import io
 
 ROOT=Path(__file__).resolve().parents[1]
 class ExternalTrainingTests(unittest.TestCase):
     def setUp(self):
-        self.temp=tempfile.TemporaryDirectory()
-        self.addCleanup(self.temp.cleanup)
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name)
-        self.env=dict(Path=Path,np=np,Image=Image,io=io,hashlib=hashlib,urlparse=urlparse,EXTERNAL_ROOT=self.root)
-        notebook=json.loads((ROOT/'notebooks/09_external_clinical_data_training.ipynb').read_text())
-        for cell in notebook['cells']:
+        self.env=dict(Path=Path,np=np,pd=pd,Image=Image,io=io,hashlib=hashlib,urllib=__import__('urllib'))
+        n=json.loads((ROOT/'notebooks/09_external_clinical_data_training.ipynb').read_text())
+        for cell in n['cells']:
             if cell['cell_type']!='code':continue
             for node in ast.parse(''.join(cell['source'])).body:
-                if isinstance(node,ast.FunctionDef) and node.name in {'image_fingerprints','fetch_one'}:
-                    exec(compile(ast.Module(body=[node],type_ignores=[]),'<external>', 'exec'),self.env)
+                if isinstance(node,ast.FunctionDef) and node.name in {'file_md5','download_verified','image_fingerprints','select_training_records'}:
+                    exec(compile(ast.Module(body=[node],type_ignores=[]),'<public archive>','exec'),self.env)
 
-    def test_cached_verified_image_resumes_without_network(self):
-        output=io.BytesIO();Image.new('RGB',(20,20),'blue').save(output,format='JPEG')
-        raw=output.getvalue();digest=hashlib.md5(raw).hexdigest()
-        (self.root/(digest+'.jpg')).write_bytes(raw)
-        result=self.env['fetch_one'](dict(md5hash=digest,url='https://www.dermaamin.com/example.jpg'))
-        self.assertEqual(result['download_status'],'ok')
-        self.assertEqual(result['image_hash'],hashlib.sha256(raw).hexdigest())
+    def test_cached_verified_file_avoids_network(self):
+        target=self.root/'archive.zip';raw=b'fixture';target.write_bytes(raw)
+        with patch('urllib.request.urlopen') as opener:
+            self.env['download_verified']('https://zenodo.org/fixture',target,hashlib.md5(raw).hexdigest())
+            opener.assert_not_called()
 
-    def test_cache_corruption_is_rejected(self):
-        digest='0'*32
-        (self.root/(digest+'.jpg')).write_bytes(b'not an image')
-        result=self.env['fetch_one'](dict(md5hash=digest,url='https://www.dermaamin.com/example.jpg'))
-        self.assertEqual(result['download_status'],'failed')
-        self.assertIn('MD5 mismatch',result['download_error'])
+    def test_bad_download_cannot_become_verified_archive(self):
+        target=self.root/'archive.zip'
+        with patch('urllib.request.urlopen',return_value=io.BytesIO(b'wrong content')):
+            with self.assertRaises(ValueError):self.env['download_verified']('https://zenodo.org/fixture',target,'0'*32)
+        self.assertFalse(target.exists())
+        self.assertTrue(target.with_suffix('.zip.part').exists())
 
-    def test_unexpected_source_host_is_rejected_without_download(self):
-        result=self.env['fetch_one'](dict(md5hash='0'*32,url='https://example.org/file.jpg'))
-        self.assertEqual(result['download_status'],'failed')
-        self.assertIn('allowlisted',result['download_error'])
+    def test_corrected_holdout_disagreements_and_changed_labels_are_excluded(self):
+        original=pd.DataFrame([
+            dict(md5hash=str(i),label='squamous cell carcinoma',fitzpatrick_scale=5,fitzpatrick_centaur=5 if i!=3 else 2)
+            for i in range(5)])
+        clean=pd.DataFrame([
+            dict(md5hash=str(i),label='squamous cell carcinoma' if i!=4 else 'melanoma',fst=5,partition='train' if i!=1 else 'test',new_img_name=str(i)+'.jpg')
+            for i in range(5)])
+        clean.loc[2,'partition']='val'
+        selected=self.env['select_training_records'](original,clean)
+        self.assertEqual(selected.md5hash.tolist(),['0'])
+        self.assertEqual(selected.class_label.tolist(),['SCC'])
