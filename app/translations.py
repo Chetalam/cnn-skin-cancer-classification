@@ -1251,3 +1251,17 @@ CATALOG.update({
 CATALOG.update({
     "Experimental model. Scores are not a diagnosis or a calibrated cancer risk.": "Modeli ya majaribio. Alama si utambuzi wala kipimo kilichothibitishwa cha hatari ya saratani."
 })
+
+CATALOG.update({
+    "What to do next: assessment and referral": "Hatua inayofuata: tathmini na rufaa",
+    "Use your clinical assessment and local referral protocol. The model cannot confirm or rule out cancer, choose treatment, or set referral urgency.": "Tumia tathmini yako ya kitabibu na utaratibu wa rufaa wa eneo lako. Modeli haiwezi kuthibitisha au kuondoa uwezekano wa saratani, kuchagua matibabu au kuamua uharaka wa rufaa.",
+    "Assess and document. Examine the lesion and record its location, duration, changes and symptoms in the clinical record.": "Tathmini na andika. Chunguza kidonda au badiliko la ngozi na andika mahali kilipo, muda kilipokuwepo, mabadiliko na dalili katika rekodi ya kitabibu.",
+    "Arrange assessment or referral. If you suspect cancer or are unsure, follow your local protocol. Contact the designated referral facility or consult a clinician through an approved phone or remote service if travel is difficult. Do not delay referral while waiting for a model result.": "Panga tathmini au rufaa. Ukishuku saratani au huna uhakika, fuata utaratibu wa eneo lako. Wasiliana na kituo kilichoteuliwa cha rufaa au pata ushauri wa mtaalamu wa afya kupitia huduma iliyoidhinishwa ya simu au ya mbali ikiwa safari ni ngumu. Usicheleweshe rufaa ukisubiri matokeo ya modeli.",
+    "Explain and follow up. Tell the patient where to go and when, record the referral plan in the clinical record, and agree who will check whether the patient was seen.": "Eleza na fuatilia. Mwambie mgonjwa aende wapi na lini, andika mpango wa rufaa katika rekodi ya kitabibu, na kubalianeni nani atafuatilia kama mgonjwa alionwa.",
+    "Download referral checklist for offline use": "Pakua orodha ya hatua za rufaa kwa matumizi bila intaneti",
+    "Blank handover fields — complete in your approved clinical record": "Sehemu tupu za makabidhiano — jaza katika rekodi ya kitabibu iliyoidhinishwa",
+    "Clinical findings and reason for referral": "Matokeo ya tathmini na sababu ya rufaa",
+    "Receiving facility or clinician and contact": "Kituo au mtaalamu anayepokea rufaa na mawasiliano",
+    "Urgency and appointment per local protocol": "Uharaka na tarehe ya miadi kulingana na utaratibu wa eneo lako",
+    "Follow-up owner and date": "Mhusika wa ufuatiliaji na tarehe",
+})

@@ -1,6 +1,7 @@
 import secrets
 import streamlit as st
 import db
+from referral import show_referral_guidance
 from images import validate_image
 from inference import inspect_package, predict_image
 from translations import t
@@ -79,6 +80,7 @@ with right:
             st.metric(t('Model score'), f"{result['confidence']:.1%}")
             st.bar_chart({t('Model score'): result['scores']})
             st.caption(t('Model version') + ': ' + result['model_name'])
+            show_referral_guidance('analysis_referral_checklist')
         elif result['status'] == 'predicted':
             st.info(t('A historical prediction is saved in History. It does not establish that a lesion is present.'))
         else:
