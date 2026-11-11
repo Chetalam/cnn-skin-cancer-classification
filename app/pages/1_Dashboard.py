@@ -28,11 +28,7 @@ else:
     col3.metric(t('Your reviews awaiting model'), sum((row['status'] == 'awaiting_model' for row in rows)))
     st.subheader(t('Start a review'))
     st.write(t('Upload a de-identified lesion image, check the preview and save a review.'))
-    st.page_link('pages/2_Analyse_Image.py', label=t('Open Analyse Image'), icon='🔬')
+    analyse, reviews = st.columns(2)
+    analyse.page_link('pages/2_Analyse_Image.py', label=t('Open Analyse Image'), icon='🔬')
+    reviews.page_link('pages/3_History.py', label=t('View Reviews'), icon='📋')
     st.info(t('A completed checkpoint can be used for experimental predictions. SCC and skin-type performance requirements remain unmet.'))
-    st.subheader(t('Your recent reviews'))
-    if rows:
-        recent_reviews = [{'Case reference': row['case_reference'] or '—', 'File': row['file_name'], 'Status': 'Awaiting model' if row['status'] == 'awaiting_model' else 'Predicted', 'Saved': timestamp(row['uploaded_at'])} for row in rows[:5]]
-        st.dataframe(display_data(recent_reviews), hide_index=True, use_container_width=True)
-    else:
-        st.info(t('No reviews yet. Your first saved review will appear here.'))

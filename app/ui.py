@@ -20,6 +20,7 @@ ADMIN_ONLY_PAGES = {
 
 WORKER_ONLY_PAGES = {
     "Analyse Image",
+    "Reviews",
     "History",
     "Review Records",
 }
@@ -152,14 +153,8 @@ def setup(title, protected=True):
 
                 st.page_link(
                     "pages/3_History.py",
-                    label=t("History"),
+                    label=t("Reviews"),
                     icon="📋",
-                )
-
-                st.page_link(
-                    "pages/8_Review_Records.py",
-                    label=t("Review Records"),
-                    icon="📝",
                 )
 
             if administrator:

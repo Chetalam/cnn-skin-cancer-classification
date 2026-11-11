@@ -1,4 +1,4 @@
-"""Shared reversible review actions for History and Review Records."""
+"""Reversible archive and restore controls for the Reviews page."""
 import streamlit as st
 import db
 from translations import t

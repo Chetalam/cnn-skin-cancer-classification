@@ -9,9 +9,9 @@ with st.expander(t('Deactivation and reactivation')):
     st.write(t('Open Account → Deactivate profile. Enter your current password and confirm. Your profile and reviews remain saved. An active administrator at your centre can reactivate your account. The last active administrator at a centre cannot self-deactivate.'))
 if user['role'] == 'healthcare_worker':
     with st.expander(t('Create and view reviews')):
-        st.write(t('Open Analyse Image, upload a supported de-identified image and save the preview. History contains only your own reviews and supports CSV export. Use Analyse and save for an experimental prediction when a verified checkpoint is installed. Save without prediction retains an awaiting-model record. Model scores are not a diagnosis.'))
+        st.write(t('Open Analyse Image to upload and save a de-identified image. Reviews contains your saved records, predictions, referral downloads and CSV export. Save without prediction retains an awaiting-model record. Model scores are not a diagnosis.'))
     with st.expander(t('Update, archive or restore a review')):
-        st.write(t('Open Review Records to update a case reference. Archive hides a review from the active list and preserves all saved data. Choose Archived reviews to restore it.'))
+        st.write(t('Open Reviews to edit a case reference, archive a review or restore it. Archiving hides it from the active list and retains its preview and predictions. Choose Archived reviews to restore it.'))
 else:
     with st.expander(t('Administrator tasks')):
         st.write(t('User Management controls account access within your centre. Dataset Status manages imported dataset metadata. Database Guide explains the tables and CRUD actions and shows database health.'))

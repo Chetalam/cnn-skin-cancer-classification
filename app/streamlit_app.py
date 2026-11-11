@@ -75,5 +75,5 @@ with left:
         st.caption(t('Healthcare centre names are self-declared.'))
 with right:
     st.subheader(t('Your research workspace'))
-    st.markdown(t('\n        **Dashboard** — account role, healthcare centre and activity\n\n        **Analyse Image** — upload, preview and save a review\n\n        **History** — saved records and CSV export\n\n        **Account** — profile and password settings\n\n        **User Management** — administrator account controls\n\n        **Help** — instructions for using the app\n        '))
+    st.markdown(t('\n        **Dashboard** — account role, healthcare centre and activity\n\n        **Analyse Image** — upload, preview and save a review\n\n        **Reviews** — saved predictions, referral checklists, editing and archive/restore\n\n        **Account** — profile and password settings\n\n        **User Management** — administrator account controls\n\n        **Help** — instructions for using the app\n        '))
     st.warning(t('No clinical diagnosis is provided at this milestone.'))

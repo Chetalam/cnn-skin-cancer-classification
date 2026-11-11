@@ -55,7 +55,7 @@ with right:
             st.info(t('Lesion visibility is uncertain. Classification is blocked; obtain a clearer image or qualified review.'))
     visibility_confirmed = image is not None and visibility == 'Yes'
     reference = st.text_input(t('Optional case reference'), max_chars=80)
-    consent = st.checkbox(t('Save a small preview and file metadata in my history.'))
+    consent = st.checkbox(t('Save a small preview and file metadata in Reviews.'))
     st.caption(t('The original image is not stored. A preview up to 320 × 320 pixels is retained when saved.'))
     analyse = st.button(t('Analyse and save'), type='primary', disabled=not visibility_confirmed or not consent or not model_ready)
     save_only = st.button(t('Save without prediction'), disabled=image is None or not consent)
@@ -74,7 +74,7 @@ with right:
             st.error(t(str(exc)))
     if image is not None and st.session_state.get('saved_review'):
         result = db.prediction_detail(user['id'], st.session_state['saved_review'])
-        st.success(t('Review saved to your history.'))
+        st.success(t('Review saved in Reviews.'))
         if result['status'] == 'predicted' and visibility_confirmed:
             st.metric(t('Predicted class'), result['cancer_class'])
             st.metric(t('Model score'), f"{result['confidence']:.1%}")
@@ -82,8 +82,8 @@ with right:
             st.caption(t('Model version') + ': ' + result['model_name'])
             show_referral_guidance('analysis_referral_checklist', result)
         elif result['status'] == 'predicted':
-            st.info(t('A historical prediction is saved in History. It does not establish that a lesion is present.'))
+            st.info(t('A historical prediction is saved in Reviews. It does not establish that a lesion is present.'))
         else:
             st.info(t('Saved without a prediction. Upload the original image again to analyse it.'))
-        st.page_link('pages/3_History.py', label=t('View saved history'))
+        st.page_link('pages/3_History.py', label=t('View Reviews'))
     st.caption(t('Readability validation cannot confirm that the image depicts a skin lesion.'))

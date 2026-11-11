@@ -6,10 +6,11 @@ import db
 from referral import show_referral_guidance
 from ui import setup, disclaimer, timestamp, flash
 from review_actions import review_view, archive_controls
-user = setup('History')
-st.title(t('Your review history'))
+user = setup('Reviews')
+st.title(t('Reviews'))
 disclaimer()
 flash()
+st.page_link('pages/2_Analyse_Image.py', label=t('Create a new review'), icon='🔬')
 view = review_view('history_view')
 rows = db.history(user['id'], view=view)
 if not rows:
@@ -26,7 +27,7 @@ buffer = io.StringIO()
 writer = csv.DictWriter(buffer, fieldnames=list(display_rows[0]))
 writer.writeheader()
 writer.writerows(({k: safe_cell(v) for k, v in row.items()} for row in display_rows))
-st.download_button(t('Download my history as CSV'), buffer.getvalue(), 'my_review_history.csv', 'text/csv', key='pages/3_History.py:31:download_button')
+st.download_button(t('Download reviews as CSV'), buffer.getvalue(), 'my_reviews.csv', 'text/csv', key='pages/3_History.py:31:download_button')
 by_id = {r['id']: r for r in rows}
 selected = st.selectbox(t('Open a saved review'), list(by_id), format_func=translated_format(lambda key: f'Review #{key}'), key='history_selection_'+view)
 row = by_id[selected]
@@ -39,6 +40,17 @@ with right:
     st.write(t('Status:'), 'Awaiting model' if row['status'] == 'awaiting_model' else 'Predicted')
     st.write(t('Original dimensions:'), f"{row['width']} × {row['height']}")
     st.caption(t('Research record. No clinical diagnosis is implied.'))
+    if row['archived_at'] is None:
+        with st.form(f'update_review_{selected}'):
+            reference = st.text_input(t('Case reference'), value=row['case_reference'] or '', max_chars=80)
+            update = st.form_submit_button(t('Update case reference'), type='primary')
+        if update:
+            try:
+                db.update_review(user['id'], selected, reference)
+                st.session_state['flash'] = 'Case reference updated.'
+                st.rerun()
+            except ValueError as exc:
+                st.error(t(str(exc)))
     archive_controls(user['id'], row, 'history_'+str(selected))
 
 if row['status'] == 'predicted':
