@@ -69,7 +69,7 @@ def render_activity(data, start, end):
                     y=alt.Y('count:Q', title=t('Saved reviews'), axis=alt.Axis(tickMinStep=1), scale=alt.Scale(domainMin=0)),
                     tooltip=[alt.Tooltip('date:T', title=t('Date'), format='%d %b %Y'), alt.Tooltip('count:Q', title=t('Saved reviews'), format=',')],
                 )
-                st.altair_chart(finish(base.mark_area(color=BLUE, opacity=.12) + base.mark_line(color=BLUE, strokeWidth=3, point=True)), width='stretch')
+                st.altair_chart(finish(base.mark_area(color=BLUE, opacity=.12) + base.mark_line(color=BLUE, strokeWidth=3, point=True)), use_container_width=True)
                 busiest = int(max(values))
                 st.caption(t('Highest daily review count') + f': {busiest}')
             with right, st.container(border=True):
@@ -80,7 +80,7 @@ def render_activity(data, start, end):
                     theta=alt.Theta('count:Q'), color=alt.Color('status:N', scale=alt.Scale(range=[BLUE, '#cbd5e1'])),
                     tooltip=[alt.Tooltip('status:N', title=t('Status')), alt.Tooltip('count:Q', title=t('Reviews'))],
                 )
-                st.altair_chart(finish(chart), width='stretch')
+                st.altair_chart(finish(chart), use_container_width=True)
                 rate = data['predicted']/data['total']
                 st.caption(t('Prediction completion') + f': {rate:.0%}')
                 st.caption(t('Completion measures workflow activity, not diagnostic quality.'))
@@ -100,7 +100,7 @@ def render_activity(data, start, end):
                     color=alt.Color('class:N', scale=alt.Scale(domain=['BCC', 'Melanoma', 'SCC'], range=PALETTE), legend=None),
                     tooltip=[alt.Tooltip('class:N', title=t('Class')), alt.Tooltip('count:Q', title=t('Predictions'))],
                 )
-                st.altair_chart(finish(chart), width='stretch')
+                st.altair_chart(finish(chart), use_container_width=True)
                 st.caption(t('Predicted labels are not confirmed diagnoses.'))
             with right, st.container(border=True):
                 st.subheader(t('Model score distribution'))
@@ -111,7 +111,7 @@ def render_activity(data, start, end):
                     y=alt.Y('count:Q', title=t('Predictions'), axis=alt.Axis(tickMinStep=1)),
                     tooltip=[alt.Tooltip('band:N', title=t('Model score')), alt.Tooltip('count:Q', title=t('Predictions'))],
                 )
-                st.altair_chart(finish(chart), width='stretch')
+                st.altair_chart(finish(chart), use_container_width=True)
                 st.caption(t('Model scores are uncalibrated and do not represent diagnostic accuracy.'))
             with st.container(border=True):
                 st.subheader(t('Model versions used'))
@@ -120,7 +120,7 @@ def render_activity(data, start, end):
                     parts = value.split(' / ')
                     versions.append({t('Model'): parts[0], t('Source run'): parts[1] if len(parts)>1 else '—',
                                      t('Predictions'): count})
-                st.dataframe(versions, hide_index=True, width='stretch')
+                st.dataframe(versions, hide_index=True, use_container_width=True)
     return evaluation
 
 
@@ -142,11 +142,11 @@ def render_evaluation(metrics, report, source_run):
                 color=alt.Color('metric:N', scale=alt.Scale(range=PALETTE)),
                 tooltip=[alt.Tooltip('class_label:N', title=t('Class')), alt.Tooltip('metric:N', title=t('Metric')), alt.Tooltip('value:Q', title=t('Value'), format='.1%')],
             )
-            st.altair_chart(finish(chart, 300), width='stretch')
+            st.altair_chart(finish(chart, 300), use_container_width=True)
             display = pd.DataFrame({t('Class'): report.class_label, t('Test images'): report.support.astype(int)})
             for key, label in columns.items():
                 display[label] = report[key].map(lambda value: f'{value:.1%}')
-            st.dataframe(display, hide_index=True, width='stretch')
+            st.dataframe(display, hide_index=True, use_container_width=True)
     st.warning(t('SCC limitation: SCC detection was weaker in project evaluations. Any predicted class or model score must not be used to exclude SCC or replace clinical assessment.'))
     st.caption(t('Experimental model. Scores are not a diagnosis or a calibrated cancer risk.'))
 
