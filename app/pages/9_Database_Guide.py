@@ -49,9 +49,9 @@ crud_steps = [
     },
     {
         "Action": "Delete",
-        "Meaning": "Permanently remove a record",
+        "Meaning": "Logical removal from active view",
         "In the app": (
-            "Delete your own review and its related prediction records"
+            "Archive your review; all saved records remain and can be restored"
         ),
     },
 ]
@@ -60,7 +60,7 @@ st.table(display_data(crud_steps))
 
 st.info(
     t(
-        "Deactivation is Update, not Delete. "
+        "Archiving uses an UPDATE; permanent review deletion is disabled. "
         "The account and its reviews remain saved."
     )
 )

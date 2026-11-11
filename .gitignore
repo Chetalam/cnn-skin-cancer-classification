@@ -37,3 +37,14 @@ app/storage/
 
 # Streamlit secrets
 .streamlit/secrets.toml
+# Training artifacts outside Git
+*.keras
+*.weights.h5
+Models/
+Datasets/
+Reports/
+
+# Private deployed checkpoints and parity fixtures
+app/models/active/
+
+.venv/

@@ -181,6 +181,8 @@ def setup(title, protected=True):
                     icon="🗄️",
                 )
 
+            st.page_link("pages/10_Analytics.py", label=t("Analytics"), icon="📈")
+
             st.page_link(
                 "pages/4_Account.py",
                 label=t("Account"),

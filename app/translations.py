@@ -1166,3 +1166,107 @@ def display_data(value):
 
 def translated_format(formatter):
     return lambda value: t(formatter(value))
+# Experimental inference and analytics display labels.
+CATALOG.update({
+    'Analytics': 'Uchanganuzi',
+    'Active model': 'Modeli inayotumika',
+    'Analyse and save': 'Changanua na uhifadhi',
+    'Save without prediction': 'Hifadhi bila utabiri',
+    'Analysing image...': 'Picha inachanganuliwa...',
+    'Predicted class': 'Aina iliyotabiriwa',
+    'Model score': 'Alama ya modeli',
+    'Model version': 'Toleo la modeli',
+    'Model versions used': 'Matoleo ya modeli yaliyotumika',
+    'Model score distribution': 'Mgawanyo wa alama za modeli',
+    'Healthcare centre aggregate activity': 'Jumla ya shughuli za kituo cha afya',
+    'Your review activity': 'Shughuli zako za mapitio',
+    'From date': 'Kuanzia tarehe',
+    'To date': 'Hadi tarehe',
+    'The start date must not be after the end date.': 'Tarehe ya kuanza isiwe baada ya tarehe ya mwisho.',
+    'Saved reviews': 'Mapitio yaliyohifadhiwa',
+    'Awaiting model': 'Inasubiri modeli',
+    'Reviews over time': 'Mapitio kwa tarehe',
+    'Predicted classes': 'Aina zilizotabiriwa',
+    'Predictions': 'Utabiri',
+    'Active model evaluation': 'Tathmini ya modeli inayotumika',
+    'Source run': 'Jaribio la chanzo',
+    'Test accuracy': 'Usahihi wa majaribio',
+    'Test macro F1': 'Wastani wa F1 wa majaribio',
+    'No reviews in the selected date range.': 'Hakuna mapitio katika kipindi kilichochaguliwa.',
+    'No matching evaluation report is installed.': 'Hakuna ripoti ya tathmini inayolingana iliyowekwa.',
+    'Model evaluation unavailable.': 'Tathmini ya modeli haipatikani.',
+    'Experimental model: SCC performance and darker-skin reliability requirements are not met. Scores are not a diagnosis or a calibrated cancer risk.': 'Modeli ya majaribio: mahitaji ya utendaji wa SCC na kutegemewa kwa ngozi nyeusi zaidi hayajatimizwa. Alama si utambuzi wala kipimo kilichothibitishwa cha hatari ya saratani.',
+    'Model scores are uncalibrated and do not represent diagnostic accuracy.': 'Alama za modeli hazijarekebishwa kuwa uwezekano uliothibitishwa na haziwakilishi usahihi wa utambuzi.',
+    'Review dates use UTC. Activity counts do not measure diagnostic accuracy or cancer prevalence.': 'Tarehe za mapitio hutumia UTC. Idadi ya shughuli haipimi usahihi wa utambuzi wala kuenea kwa saratani.',
+    'Held-out development results are separate from live app activity. This test set was previously inspected.': 'Matokeo ya tathmini ya utengenezaji ni tofauti na shughuli za programu. Seti hii ya majaribio ilishakaguliwa hapo awali.',
+    'Saved without a prediction. Upload the original image again to analyse it.': 'Imehifadhiwa bila utabiri. Pakia tena picha ya asili ili kuichanganua.',
+    'Preview orientation may follow EXIF metadata. Inference uses the original orientation to match training.': 'Mwelekeo wa hakiki unaweza kufuata taarifa za EXIF. Utabiri hutumia mwelekeo wa asili ili ulingane na mafunzo.',
+    'A completed checkpoint can be used for experimental predictions. SCC and skin-type performance requirements remain unmet.': 'Modeli iliyokamilisha mafunzo inaweza kutumika kwa utabiri wa majaribio. Mahitaji ya SCC na utendaji kwa aina za ngozi bado hayajatimizwa.',
+})
+
+CATALOG.update({
+    'Analytics shows activity and prediction counts. Workers see their own records; administrators see centre aggregates. It does not measure live diagnostic accuracy.': 'Uchanganuzi unaonyesha idadi ya shughuli na utabiri. Wahudumu huona rekodi zao; wasimamizi huona jumla za kituo. Hupimi usahihi wa utambuzi wa moja kwa moja.',
+    'Register or sign in to access your dashboard. Predictions use an experimental checkpoint when installed. Performance requirements remain unmet.': 'Jisajili au ingia ili kufikia dashibodi. Utabiri hutumia modeli ya majaribio inapowekwa. Mahitaji ya utendaji bado hayajatimizwa.',
+    'Open Analyse Image, upload a supported de-identified image and save the preview. History contains only your own reviews and supports CSV export. Use Analyse and save for an experimental prediction when a verified checkpoint is installed. Save without prediction retains an awaiting-model record. Model scores are not a diagnosis.': 'Fungua Changanua Picha, pakia picha isiyo na utambulisho na uhifadhi hakiki. Historia ina mapitio yako pekee na inaweza kupakuliwa kama CSV. Chagua Changanua na uhifadhi kwa utabiri wa majaribio ikiwa modeli iliyothibitishwa imewekwa. Kuhifadhi bila utabiri huacha rekodi ikisubiri modeli. Alama za modeli si utambuzi.',
+})
+
+CATALOG.update({'Test images':'Picha za majaribio','Sensitivity':'Unyeti','Precision':'Usahihi wa utabiri chanya'})
+
+CATALOG.update({
+    'Can you clearly identify a skin lesion in this image?': 'Je, unaweza kuona wazi badiliko la ngozi katika picha hii?',
+    'Not sure': 'Sina uhakika',
+    'This is your visual assessment. The current model cannot automatically detect normal skin, benign lesions, or unrelated images.': 'Haya ni maoni yako baada ya kutazama picha. Modeli ya sasa haiwezi kutambua kiotomatiki ngozi ya kawaida, mabadiliko yasiyo ya saratani au picha zisizohusiana.',
+    'You indicated that no lesion is visible. Classification is blocked. Upload a clear lesion image to analyse.': 'Umeonyesha kuwa hakuna badiliko la ngozi linaloonekana. Uainishaji umezuiwa. Pakia picha inayoonyesha badiliko hilo wazi ili kuchanganua.',
+    'Lesion visibility is uncertain. Classification is blocked; obtain a clearer image or qualified review.': 'Kuonekana kwa badiliko la ngozi hakuko wazi. Uainishaji umezuiwa; pata picha iliyo wazi zaidi au uhakiki wa mtaalamu.',
+    'A historical prediction is saved in History. It does not establish that a lesion is present.': 'Utabiri wa awali umehifadhiwa katika Historia. Hauthibitishi kuwepo kwa badiliko la ngozi.',
+})
+
+CATALOG.update({
+    'Show reviews': 'Onyesha mapitio',
+    'Active reviews': 'Mapitio yanayotumika',
+    'Archived reviews': 'Mapitio yaliyowekwa kwenye kumbukumbu',
+    'All reviews': 'Mapitio yote',
+    'Archive state': 'Hali ya kumbukumbu',
+    'Archived': 'Kwenye kumbukumbu',
+    'Archived on': 'Tarehe ya kuweka kwenye kumbukumbu',
+    'Archive review': 'Weka pitio kwenye kumbukumbu',
+    'Restore review': 'Rejesha pitio',
+    'Move this review to the archive.': 'Weka pitio hili kwenye kumbukumbu.',
+    'Review restored.': 'Pitio limerejeshwa.',
+    'Review archived. All saved data was retained.': 'Pitio limewekwa kwenye kumbukumbu. Data yote iliyohifadhiwa imebaki.',
+    'No reviews in this view.': 'Hakuna mapitio katika mwonekano huu.',
+    'This review is archived. Its preview and predictions remain saved.': 'Pitio hili lipo kwenye kumbukumbu. Hakiki ya picha na utabiri wake vimebaki vimehifadhiwa.',
+    'Archiving hides this review from your active list. Its preview, predictions and model version remain in the database. You can restore it later.': 'Kuweka kwenye kumbukumbu huficha pitio katika orodha inayotumika. Hakiki ya picha, utabiri na toleo la modeli hubaki katika hifadhidata. Unaweza kulirejesha baadaye.',
+    'View and update your reviews, or archive and restore them without deleting saved data.': 'Tazama na ubadilishe mapitio yako, au yaweke kwenye kumbukumbu na kuyarejesha bila kufuta data iliyohifadhiwa.',
+    'Analytics includes archived reviews because their data remains stored.': 'Uchanganuzi unajumuisha mapitio yaliyowekwa kwenye kumbukumbu kwa sababu data yake imebaki imehifadhiwa.',
+    'Update, archive or restore a review': 'Badilisha, weka kwenye kumbukumbu au rejesha pitio',
+    'Open Review Records to update a case reference. Archive hides a review from the active list and preserves all saved data. Choose Archived reviews to restore it.': 'Fungua Rekodi za Mapitio kubadilisha rejeleo. Kuweka kwenye kumbukumbu huficha pitio kwenye orodha inayotumika na kuhifadhi data yote. Chagua mapitio ya kumbukumbu ili kulirejesha.',
+    'Logical removal from active view': 'Kuondoa kwenye mwonekano unaotumika bila kufuta data',
+    'Archive your review; all saved records remain and can be restored': 'Weka pitio kwenye kumbukumbu; rekodi zote hubaki na zinaweza kurejeshwa',
+    'Archiving uses an UPDATE; permanent review deletion is disabled. The account and its reviews remain saved.': 'Kuweka kwenye kumbukumbu hutumia UPDATE; kufuta mapitio kabisa kumezuiwa. Akaunti na mapitio hubaki vimehifadhiwa.',
+    'This review is archived. Restore it in Review Records before changing it.': 'Pitio hili lipo kwenye kumbukumbu. Lirejeshe katika Rekodi za Mapitio kabla ya kulibadilisha.',
+    'Restore this archived review before adding a prediction.': 'Rejesha pitio hili kutoka kwenye kumbukumbu kabla ya kuongeza utabiri.',
+})
+
+CATALOG.update({
+    "Experimental model. Scores are not a diagnosis or a calibrated cancer risk.": "Modeli ya majaribio. Alama si utambuzi wala kipimo kilichothibitishwa cha hatari ya saratani."
+})
+
+CATALOG.update({
+    "What to do next: assessment and referral": "Hatua inayofuata: tathmini na rufaa",
+    "Use your clinical assessment and local referral protocol. The model cannot confirm or rule out cancer, choose treatment, or set referral urgency.": "Tumia tathmini yako ya kitabibu na utaratibu wa rufaa wa eneo lako. Modeli haiwezi kuthibitisha au kuondoa uwezekano wa saratani, kuchagua matibabu au kuamua uharaka wa rufaa.",
+    "Assess and document. Examine the lesion and record its location, duration, changes and symptoms in the clinical record.": "Tathmini na andika. Chunguza kidonda au badiliko la ngozi na andika mahali kilipo, muda kilipokuwepo, mabadiliko na dalili katika rekodi ya kitabibu.",
+    "Arrange assessment or referral. If you suspect cancer or are unsure, follow your local protocol. Contact the designated referral facility or consult a clinician through an approved phone or remote service if travel is difficult. Do not delay referral while waiting for a model result.": "Panga tathmini au rufaa. Ukishuku saratani au huna uhakika, fuata utaratibu wa eneo lako. Wasiliana na kituo kilichoteuliwa cha rufaa au pata ushauri wa mtaalamu wa afya kupitia huduma iliyoidhinishwa ya simu au ya mbali ikiwa safari ni ngumu. Usicheleweshe rufaa ukisubiri matokeo ya modeli.",
+    "Explain and follow up. Tell the patient where to go and when, record the referral plan in the clinical record, and agree who will check whether the patient was seen.": "Eleza na fuatilia. Mwambie mgonjwa aende wapi na lini, andika mpango wa rufaa katika rekodi ya kitabibu, na kubalianeni nani atafuatilia kama mgonjwa alionwa.",
+    "Download referral checklist for offline use": "Pakua orodha ya hatua za rufaa kwa matumizi bila intaneti",
+    "Blank handover fields — complete in your approved clinical record": "Sehemu tupu za makabidhiano — jaza katika rekodi ya kitabibu iliyoidhinishwa",
+    "Clinical findings and reason for referral": "Matokeo ya tathmini na sababu ya rufaa",
+    "Receiving facility or clinician and contact": "Kituo au mtaalamu anayepokea rufaa na mawasiliano",
+    "Urgency and appointment per local protocol": "Uharaka na tarehe ya miadi kulingana na utaratibu wa eneo lako",
+    "Follow-up owner and date": "Mhusika wa ufuatiliaji na tarehe",
+})
+
+CATALOG.update({
+"Arrange assessment or referral. If you suspect skin cancer or are unsure, follow your local protocol and refer to a facility with dermatology or skin-cancer assessment services. Confirm the receiving facility can assess the patient; it can arrange cancer-specialist care if needed. If travel is difficult, seek advice through an approved phone or remote service. Do not delay referral while waiting for a model result.": "Panga tathmini au rufaa. Ukishuku saratani ya ngozi au huna uhakika, fuata utaratibu wa eneo lako na mpe mgonjwa rufaa kwenda kituo chenye huduma za tathmini ya ngozi au saratani ya ngozi. Thibitisha kuwa kituo kinachopokea rufaa kinaweza kumtathmini mgonjwa; kinaweza kupanga huduma za mtaalamu wa saratani ikihitajika. Ikiwa safari ni ngumu, tafuta ushauri kupitia huduma iliyoidhinishwa ya simu au ya mbali. Usicheleweshe rufaa ukisubiri matokeo ya modeli.",
+"SCC limitation: SCC detection was weaker in project evaluations. Any predicted class or model score must not be used to exclude SCC or replace clinical assessment.": "Kikomo cha SCC: uwezo wa kutambua SCC ulikuwa dhaifu zaidi katika tathmini za mradi. Darasa lolote lililotabiriwa au alama ya modeli haipaswi kutumiwa kuondoa uwezekano wa SCC au kuchukua nafasi ya tathmini ya kitabibu."
+})
