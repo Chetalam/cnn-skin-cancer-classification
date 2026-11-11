@@ -62,7 +62,8 @@ def setup(title, protected=True):
         }
 
         .block-container {
-            padding-top: 2rem;
+            /* Clear Streamlit’s fixed toolbar before the page caption. */
+            padding-top: 6rem;
             max-width: 1200px;
         }
 
