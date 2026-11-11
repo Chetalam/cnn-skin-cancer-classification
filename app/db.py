@@ -380,7 +380,7 @@ def save_review(user_id, request_key, case_reference, file_name, image, raw_dige
             if existing['user_id'] != user_id:
                 raise ValueError('Record unavailable.')
             if existing['archived_at'] is not None:
-                raise ValueError('This review is archived. Restore it in Review Records before changing it.')
+                raise ValueError('This review is archived. Restore it in Reviews before changing it.')
             return existing['id']
         cursor = conn.execute('INSERT INTO skin_lesion_images(user_id,request_key,case_reference,file_name,image_sha256,width,height,thumbnail,uploaded_at) VALUES (?,?,?,?,?,?,?,?,?)',
             (user_id,request_key,case_reference.strip()[:80],file_name.replace('\\\\','/').split('/')[-1][:200],raw_digest,image.width,image.height,out.getvalue(),now))

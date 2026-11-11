@@ -1303,3 +1303,19 @@ CATALOG.update({
     "Date": "Tarehe",
     "Model": "Modeli"
 })
+
+
+CATALOG.update({
+    "Reviews": "Mapitio",
+    "View Reviews": "Tazama Mapitio",
+    "Download reviews as CSV": "Pakua mapitio kama CSV",
+    "Save a small preview and file metadata in Reviews.": "Hifadhi hakiki ndogo ya picha na taarifa za faili katika Mapitio.",
+    "Review saved in Reviews.": "Pitio limehifadhiwa katika Mapitio.",
+    "A historical prediction is saved in Reviews. It does not establish that a lesion is present.": "Utabiri wa awali umehifadhiwa katika Mapitio. Hauthibitishi kuwa kidonda cha ngozi kipo.",
+    "This review is archived. Restore it in Reviews before changing it.": "Pitio hili limewekwa kwenye kumbukumbu. Lirejeshe katika Mapitio kabla ya kulibadilisha.",
+    "Open Reviews or view account details": "Fungua Mapitio au tazama maelezo ya akaunti",
+    "Open Analyse Image to upload and save a de-identified image. Reviews contains your saved records, predictions, referral downloads and CSV export. Save without prediction retains an awaiting-model record. Model scores are not a diagnosis.": "Fungua Changanua Picha ili kupakia na kuhifadhi picha isiyo na utambulisho wa mgonjwa. Mapitio yana rekodi zako, utabiri, orodha za rufaa za kupakua na faili za CSV. Kuhifadhi bila utabiri huweka rekodi inayosubiri modeli. Alama za modeli si utambuzi.",
+    "Open Reviews to edit a case reference, archive a review or restore it. Archiving hides it from the active list and retains its preview and predictions. Choose Archived reviews to restore it.": "Fungua Mapitio ili kubadilisha rejeleo la kesi, kuweka pitio kwenye kumbukumbu au kulirejesha. Kuweka kwenye kumbukumbu hulificha kwenye orodha inayotumika na huhifadhi hakiki ya picha na utabiri wake. Chagua mapitio ya kumbukumbu ili kulirejesha."
+})
+
+CATALOG.update({'\n        **Dashboard** — account role, healthcare centre and activity\n\n        **Analyse Image** — upload, preview and save a review\n\n        **Reviews** — saved predictions, referral checklists, editing and archive/restore\n\n        **Account** — profile and password settings\n\n        **User Management** — administrator account controls\n\n        **Help** — instructions for using the app\n        ': '\n        **Dashibodi** — aina ya akaunti, kituo cha afya na shughuli\n\n        **Changanua Picha** — pakia picha, tazama hakiki na uhifadhi pitio\n\n        **Mapitio** — utabiri uliohifadhiwa, orodha za rufaa, uhariri na kumbukumbu\n\n        **Akaunti** — wasifu na mipangilio ya nenosiri\n\n        **Usimamizi wa Watumiaji** — udhibiti wa akaunti wa msimamizi\n\n        **Msaada** — maelekezo ya kutumia programu\n        '})

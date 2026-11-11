@@ -37,7 +37,7 @@ crud_steps = [
     {
         "Action": "Read",
         "Meaning": "View saved records",
-        "In the app": "Open your history or view account details",
+        "In the app": "Open Reviews or view account details",
     },
     {
         "Action": "Update",
