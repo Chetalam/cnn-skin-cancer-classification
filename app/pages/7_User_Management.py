@@ -19,7 +19,7 @@ roles = {'system_administrator': 'System Administrator', 'healthcare_worker': 'H
 columns = st.columns(3)
 for column, status in zip(columns, ['active', 'suspended', 'deactivated']):
     column.metric(t(status.title() + ' accounts'), sum((a['account_status'] == status for a in accounts)))
-st.dataframe(display_data([{'Name': a['full_name'], 'Email': a['email'], 'Role': roles.get(a['role'], a['role']), 'Status': a['account_status'].title(), 'Registered': timestamp(a['created_at']), 'Deactivated': timestamp(a['deactivated_at']) if a.get('deactivated_at') else '—'} for a in accounts]), hide_index=True, use_container_width=True)
+st.table(display_data([{'Name': a['full_name'], 'Email': a['email'], 'Role': roles.get(a['role'], a['role']), 'Status': a['account_status'].title(), 'Registered': timestamp(a['created_at']), 'Deactivated': timestamp(a['deactivated_at']) if a.get('deactivated_at') else '—'} for a in accounts]))
 st.caption(t('Password hashes and session tokens are not displayed. Centre names remain self-declared.'))
 manageable = {a['id']: a for a in accounts if a['id'] != user['id']}
 if not manageable:

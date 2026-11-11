@@ -61,6 +61,10 @@ def setup(title, protected=True):
             display: none !important;
         }
 
+        [data-testid="stMain"] {
+            overflow-y: auto;
+        }
+
         .block-container {
             /* Clear Streamlit’s fixed toolbar before the page caption. */
             padding-top: 6rem;
