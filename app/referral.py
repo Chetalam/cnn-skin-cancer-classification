@@ -1,5 +1,7 @@
 """Referral guidance for healthcare workers, independent of model scores."""
 import streamlit as st
+import math
+from datetime import datetime, timezone
 
 from translations import t
 
@@ -21,22 +23,45 @@ FIELDS = (
 )
 
 
-def checklist_text():
-    """Return a printable blank checklist without patient or model data."""
-    lines = [t(TITLE), "", t(NOTICE), "", t(SCC_LIMITATION), ""]
+def checklist_text(prediction):
+    """Attach the owned, saved prediction; never infer again for a download."""
+    labels = ('BCC', 'Melanoma', 'SCC')
+    scores = prediction.get('scores', {})
+    if prediction.get('status') != 'predicted' or prediction.get('cancer_class') not in labels:
+        raise ValueError('A saved prediction is required for this referral checklist.')
+    if set(scores) != set(labels) or any(not isinstance(v, (int, float)) or not math.isfinite(v) or not 0 <= v <= 1 for v in scores.values()):
+        raise ValueError('Saved prediction scores are incomplete.')
+    if not prediction.get('model_name') or not prediction.get('created_at'):
+        raise ValueError('Saved model version or prediction date is missing.')
+    clean = lambda value: ' '.join(str(value).split())
+    saved_at = datetime.fromtimestamp(prediction['created_at'], timezone.utc).strftime('%d %b %Y, %H:%M UTC')
+    lines = [t(TITLE), '', t('Saved prediction — decision support only'),
+             f"{t('Review ID')}: {prediction['image_id']}",
+             f"{t('Case reference')}: {clean(prediction.get('case_reference') or '—')}",
+             f"{t('Prediction saved')}: {saved_at}",
+             f"{t('Predicted class')}: {prediction['cancer_class']}",
+             f"{t('Model score')}: {prediction['confidence']:.1%}",
+             f"{t('Model version')}: {clean(prediction['model_name'])}", '', t('All class scores')]
+    lines.extend(f"{label}: {scores[label]:.1%}" for label in labels)
+    lines.extend(('', t('Model scores are uncalibrated and do not represent diagnostic accuracy.'), '', t(NOTICE), '', t(SCC_LIMITATION), ''))
     lines.extend(f"{i}. {t(step)}" for i, step in enumerate(STEPS, 1))
     lines.extend(("", t(HANDOVER)))
     lines.extend(f"{t(field)}: ____________________" for field in FIELDS)
     return "\n".join(lines) + "\n"
 
 
-def show_referral_guidance(key):
+def show_referral_guidance(key, prediction):
     st.subheader(t(TITLE))
     st.info(t(NOTICE))
     st.warning(t(SCC_LIMITATION))
     for number, step in enumerate(STEPS, 1):
         st.write(f"{number}. {t(step)}")
+    try:
+        text = checklist_text(prediction)
+    except ValueError as exc:
+        st.error(t(str(exc)))
+        return
     st.download_button(
-        t(DOWNLOAD), checklist_text(), "referral_checklist.txt",
+        t(DOWNLOAD), text, f"referral_review_{int(prediction['image_id'])}.txt",
         mime="text/plain; charset=utf-8", key=key,
     )

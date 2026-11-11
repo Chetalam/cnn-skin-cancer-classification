@@ -46,4 +46,4 @@ if row['status'] == 'predicted':
     st.caption(t('Model version') + ': ' + detail['model_name'])
     st.bar_chart({t('Model score'): detail['scores']})
     st.caption(t('Model scores are uncalibrated and do not represent diagnostic accuracy.'))
-    show_referral_guidance('history_referral_checklist')
+    show_referral_guidance('history_referral_checklist', detail)

@@ -80,7 +80,7 @@ with right:
             st.metric(t('Model score'), f"{result['confidence']:.1%}")
             st.bar_chart({t('Model score'): result['scores']})
             st.caption(t('Model version') + ': ' + result['model_name'])
-            show_referral_guidance('analysis_referral_checklist')
+            show_referral_guidance('analysis_referral_checklist', result)
         elif result['status'] == 'predicted':
             st.info(t('A historical prediction is saved in History. It does not establish that a lesion is present.'))
         else:
