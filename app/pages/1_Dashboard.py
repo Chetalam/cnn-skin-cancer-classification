@@ -16,7 +16,7 @@ if administrator:
     accounts = db.list_accounts_for_review(user['id'])
     managed_accounts = [account for account in accounts if account['id'] != user['id']]
     if managed_accounts:
-        st.dataframe(display_data([{'Name': account['full_name'], 'Email': account['email'], 'Role': role_labels.get(account['role'], account['role']), 'Status': account['account_status'].title(), 'Registered': timestamp(account['created_at'])} for account in managed_accounts]), hide_index=True, use_container_width=True)
+        st.table(display_data([{'Name': account['full_name'], 'Email': account['email'], 'Role': role_labels.get(account['role'], account['role']), 'Status': account['account_status'].title(), 'Registered': timestamp(account['created_at'])} for account in managed_accounts]))
     else:
         st.info(t('No other users are registered at your healthcare centre.'))
     st.caption(t('Use User Management in the sidebar to suspend or reactivate accounts.'))

@@ -26,133 +26,138 @@ st.write(
     )
 )
 
-st.subheader(t("Create, Read, Update, Delete"))
+crud_tab, tables_tab, checks_tab = st.tabs([t("Create, Read, Update, Delete"), t("What the tables mean"), t("Current database checks")])
 
-crud_steps = [
-    {
-        "Action": "Create",
-        "Meaning": "Add a record",
-        "In the app": "Register an account or save an image review",
-    },
-    {
-        "Action": "Read",
-        "Meaning": "View saved records",
-        "In the app": "Open Reviews or view account details",
-    },
-    {
-        "Action": "Update",
-        "Meaning": "Change a record",
-        "In the app": (
-            "Edit your profile, change a case reference, "
-            "deactivate or restore access"
-        ),
-    },
-    {
-        "Action": "Delete",
-        "Meaning": "Logical removal from active view",
-        "In the app": (
-            "Archive your review; all saved records remain and can be restored"
-        ),
-    },
-]
+with crud_tab:
+    st.subheader(t("Create, Read, Update, Delete"))
 
-st.table(display_data(crud_steps))
+    crud_steps = [
+        {
+            "Action": "Create",
+            "Meaning": "Add a record",
+            "In the app": "Register an account or save an image review",
+        },
+        {
+            "Action": "Read",
+            "Meaning": "View saved records",
+            "In the app": "Open Reviews or view account details",
+        },
+        {
+            "Action": "Update",
+            "Meaning": "Change a record",
+            "In the app": (
+                "Edit your profile, change a case reference, "
+                "deactivate or restore access"
+            ),
+        },
+        {
+            "Action": "Delete",
+            "Meaning": "Logical removal from active view",
+            "In the app": (
+                "Archive your review; all saved records remain and can be restored"
+            ),
+        },
+    ]
 
-st.info(
-    t(
-        "Archiving uses an UPDATE; permanent review deletion is disabled. "
-        "The account and its reviews remain saved."
+    st.table(display_data(crud_steps))
+
+    st.info(
+        t(
+            "Archiving uses an UPDATE; permanent review deletion is disabled. "
+            "The account and its reviews remain saved."
+        )
     )
-)
 
-st.subheader(t("What the tables mean"))
 
-table_descriptions = [
-    {
-        "Table": "users",
-        "Purpose": (
-            "Profiles, roles, account status and salted password hashes"
-        ),
-    },
-    {
-        "Table": "sessions",
-        "Purpose": "Hashed sign-in tokens and expiry times",
-    },
-    {
-        "Table": "login_attempts",
-        "Purpose": "Failed sign-in counts and temporary lockouts",
-    },
-    {
-        "Table": "skin_lesion_images",
-        "Purpose": (
-            "Review ownership, filenames, case references and thumbnails"
-        ),
-    },
-    {
-        "Table": "prediction_results / prediction_scores",
-        "Purpose": "Review status and model results when integrated",
-    },
-    {
-        "Table": "model_versions / cancer_classes",
-        "Purpose": "Model descriptions and supported classes",
-    },
-    {
-        "Table": "dataset_imports / dataset_images",
-        "Purpose": "Imported clean metadata and import history",
-    },
-    {
-        "Table": "audit_events",
-        "Purpose": "Timestamped account and review actions",
-    },
-    {
-        "Table": "schema_version",
-        "Purpose": "Database migration versions",
-    },
-]
+with tables_tab:
+    st.subheader(t("What the tables mean"))
 
-st.table(display_data(table_descriptions))
+    table_descriptions = [
+        {
+            "Table": "users",
+            "Purpose": (
+                "Profiles, roles, account status and salted password hashes"
+            ),
+        },
+        {
+            "Table": "sessions",
+            "Purpose": "Hashed sign-in tokens and expiry times",
+        },
+        {
+            "Table": "login_attempts",
+            "Purpose": "Failed sign-in counts and temporary lockouts",
+        },
+        {
+            "Table": "skin_lesion_images",
+            "Purpose": (
+                "Review ownership, filenames, case references and thumbnails"
+            ),
+        },
+        {
+            "Table": "prediction_results / prediction_scores",
+            "Purpose": "Review status and model results when integrated",
+        },
+        {
+            "Table": "model_versions / cancer_classes",
+            "Purpose": "Model descriptions and supported classes",
+        },
+        {
+            "Table": "dataset_imports / dataset_images",
+            "Purpose": "Imported clean metadata and import history",
+        },
+        {
+            "Table": "audit_events",
+            "Purpose": "Timestamped account and review actions",
+        },
+        {
+            "Table": "schema_version",
+            "Purpose": "Database migration versions",
+        },
+    ]
 
-health = db.database_health(user["id"])
+    st.table(display_data(table_descriptions))
 
-st.subheader(t("Current database checks"))
 
-st.write(
-    t("Integrity:"),
-    t(health["integrity"]),
-)
+with checks_tab:
+    health = db.database_health(user["id"])
 
-st.write(
-    t("Relationship errors:"),
-    len(health["foreign_key_errors"]),
-)
+    st.subheader(t("Current database checks"))
 
-st.write(
-    t("Foreign keys enabled:"),
-    t(str(health["foreign_keys_enabled"])),
-)
-
-st.write(
-    t("Schema version:"),
-    health["schema_version"],
-)
-
-st.dataframe(
-    display_data(
-        [
-            {
-                "Table": name,
-                "Saved rows": count,
-            }
-            for name, count in health["counts"].items()
-        ]
-    ),
-    hide_index=True,
-    use_container_width=True,
-)
-
-st.caption(
-    t(
-        "No password hashes, session tokens or other users' "
-        "review content are displayed here."
+    st.write(
+        t("Integrity:"),
+        t(health["integrity"]),
     )
-)
+
+    st.write(
+        t("Relationship errors:"),
+        len(health["foreign_key_errors"]),
+    )
+
+    st.write(
+        t("Foreign keys enabled:"),
+        t(str(health["foreign_keys_enabled"])),
+    )
+
+    st.write(
+        t("Schema version:"),
+        health["schema_version"],
+    )
+
+    st.table(
+        display_data(
+            [
+                {
+                    "Table": name,
+                    "Saved rows": count,
+                }
+                for name, count in health["counts"].items()
+            ]
+        ),
+    )
+
+    st.caption(
+        t(
+            "No password hashes, session tokens or other users' "
+            "review content are displayed here."
+        )
+    )
