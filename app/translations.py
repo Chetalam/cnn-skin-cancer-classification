@@ -1270,3 +1270,36 @@ CATALOG.update({
 "Arrange assessment or referral. If you suspect skin cancer or are unsure, follow your local protocol and refer to a facility with dermatology or skin-cancer assessment services. Confirm the receiving facility can assess the patient; it can arrange cancer-specialist care if needed. If travel is difficult, seek advice through an approved phone or remote service. Do not delay referral while waiting for a model result.": "Panga tathmini au rufaa. Ukishuku saratani ya ngozi au huna uhakika, fuata utaratibu wa eneo lako na mpe mgonjwa rufaa kwenda kituo chenye huduma za tathmini ya ngozi au saratani ya ngozi. Thibitisha kuwa kituo kinachopokea rufaa kinaweza kumtathmini mgonjwa; kinaweza kupanga huduma za mtaalamu wa saratani ikihitajika. Ikiwa safari ni ngumu, tafuta ushauri kupitia huduma iliyoidhinishwa ya simu au ya mbali. Usicheleweshe rufaa ukisubiri matokeo ya modeli.",
 "SCC limitation: SCC detection was weaker in project evaluations. Any predicted class or model score must not be used to exclude SCC or replace clinical assessment.": "Kikomo cha SCC: uwezo wa kutambua SCC ulikuwa dhaifu zaidi katika tathmini za mradi. Darasa lolote lililotabiriwa au alama ya modeli haipaswi kutumiwa kuondoa uwezekano wa SCC au kuchukua nafasi ya tathmini ya kitabibu."
 })
+
+
+CATALOG.update({
+    "Saved prediction — decision support only": "Utabiri uliohifadhiwa — kusaidia maamuzi pekee",
+    "Review ID": "Nambari ya pitio",
+    "Prediction saved": "Utabiri ulihifadhiwa",
+    "All class scores": "Alama za madarasa yote",
+    "A saved prediction is required for this referral checklist.": "Utabiri uliohifadhiwa unahitajika kwa orodha hii ya rufaa.",
+    "Saved prediction scores are incomplete.": "Alama za utabiri uliohifadhiwa hazijakamilika.",
+    "Saved model version or prediction date is missing.": "Toleo la modeli au tarehe ya utabiri haipo.",
+    "Reporting period": "Kipindi cha ripoti",
+    "Last 7 days": "Siku 7 zilizopita",
+    "Last 30 days": "Siku 30 zilizopita",
+    "Last 90 days": "Siku 90 zilizopita",
+    "Custom dates": "Chagua tarehe",
+    "Overview": "Muhtasari",
+    "Prediction patterns": "Mwelekeo wa utabiri",
+    "Model evaluation": "Tathmini ya modeli",
+    "Review activity": "Shughuli za mapitio",
+    "Review status": "Hali ya mapitio",
+    "Highest daily review count": "Idadi kubwa zaidi ya mapitio kwa siku",
+    "Prediction completion": "Ukamilishaji wa utabiri",
+    "Completion measures workflow activity, not diagnostic quality.": "Ukamilishaji hupima shughuli za kazi, si ubora wa utambuzi.",
+    "No completed predictions in the selected period.": "Hakuna utabiri uliokamilika katika kipindi kilichochaguliwa.",
+    "Predicted labels are not confirmed diagnoses.": "Madarasa yaliyotabiriwa si utambuzi uliothibitishwa.",
+    "Performance by class": "Utendaji kwa kila darasa",
+    "Metric": "Kipimo",
+    "Value": "Thamani",
+    "Per-class evaluation details are unavailable.": "Maelezo ya tathmini kwa kila darasa hayapatikani.",
+    "Reviews": "Mapitio",
+    "Date": "Tarehe",
+    "Model": "Modeli"
+})

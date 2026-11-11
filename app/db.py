@@ -596,7 +596,7 @@ def record_prediction(user_id, image_id, raw_digest, result):
 def prediction_detail(user_id, image_id):
     with connect() as conn:
         require_healthcare_worker(conn, user_id)
-        row = conn.execute('SELECT p.*,m.name AS model_name FROM prediction_results p JOIN skin_lesion_images i ON i.id=p.image_id LEFT JOIN model_versions m ON m.id=p.model_id WHERE i.id=? AND i.user_id=?', (image_id, user_id)).fetchone()
+        row = conn.execute('SELECT p.*,m.name AS model_name,i.case_reference,i.uploaded_at FROM prediction_results p JOIN skin_lesion_images i ON i.id=p.image_id LEFT JOIN model_versions m ON m.id=p.model_id WHERE i.id=? AND i.user_id=?', (image_id, user_id)).fetchone()
         if row is None:
             raise ValueError('Record unavailable.')
         result = dict(row)
