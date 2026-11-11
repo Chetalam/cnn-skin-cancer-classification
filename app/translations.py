@@ -1265,3 +1265,8 @@ CATALOG.update({
     "Urgency and appointment per local protocol": "Uharaka na tarehe ya miadi kulingana na utaratibu wa eneo lako",
     "Follow-up owner and date": "Mhusika wa ufuatiliaji na tarehe",
 })
+
+CATALOG.update({
+"Arrange assessment or referral. If you suspect skin cancer or are unsure, follow your local protocol and refer to a facility with dermatology or skin-cancer assessment services. Confirm the receiving facility can assess the patient; it can arrange cancer-specialist care if needed. If travel is difficult, seek advice through an approved phone or remote service. Do not delay referral while waiting for a model result.": "Panga tathmini au rufaa. Ukishuku saratani ya ngozi au huna uhakika, fuata utaratibu wa eneo lako na mpe mgonjwa rufaa kwenda kituo chenye huduma za tathmini ya ngozi au saratani ya ngozi. Thibitisha kuwa kituo kinachopokea rufaa kinaweza kumtathmini mgonjwa; kinaweza kupanga huduma za mtaalamu wa saratani ikihitajika. Ikiwa safari ni ngumu, tafuta ushauri kupitia huduma iliyoidhinishwa ya simu au ya mbali. Usicheleweshe rufaa ukisubiri matokeo ya modeli.",
+"SCC limitation: SCC detection was weaker in project evaluations. Any predicted class or model score must not be used to exclude SCC or replace clinical assessment.": "Kikomo cha SCC: uwezo wa kutambua SCC ulikuwa dhaifu zaidi katika tathmini za mradi. Darasa lolote lililotabiriwa au alama ya modeli haipaswi kutumiwa kuondoa uwezekano wa SCC au kuchukua nafasi ya tathmini ya kitabibu."
+})
