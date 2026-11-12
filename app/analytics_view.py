@@ -74,13 +74,20 @@ def render_activity(data, start, end):
                 st.caption(t('Highest daily review count') + f': {busiest}')
             with right, st.container(border=True):
                 st.subheader(t('Review status'))
-                counts = pd.DataFrame({'status': [t('Completed predictions'), t('Awaiting model')],
-                                       'count': [data['predicted'], data['awaiting']]})
+                labels = ['BCC', 'Melanoma', 'SCC']
+                counts = pd.DataFrame({
+                    'status': labels + [t('Awaiting model')],
+                    'count': [data['classes'].get(label, 0) for label in labels] + [data['awaiting']],
+                })
                 chart = alt.Chart(counts).mark_arc(innerRadius=65, outerRadius=100, cornerRadius=5).encode(
-                    theta=alt.Theta('count:Q'), color=alt.Color('status:N', scale=alt.Scale(range=[BLUE, '#cbd5e1'])),
+                    theta=alt.Theta('count:Q'), color=alt.Color('status:N', scale=alt.Scale(domain=labels + [t('Awaiting model')], range=PALETTE + ['#cbd5e1']),
+                        legend=alt.Legend(orient='bottom', direction='vertical', title=None)),
                     tooltip=[alt.Tooltip('status:N', title=t('Status')), alt.Tooltip('count:Q', title=t('Reviews'))],
                 )
                 st.altair_chart(finish(chart), use_container_width=True)
+                st.table(pd.DataFrame({t('Class'): labels,
+                    t('Predictions'): [data['classes'].get(label, 0) for label in labels]}).set_index(t('Class')))
+                st.caption(t('Predicted labels are not confirmed diagnoses.'))
                 rate = data['predicted']/data['total']
                 st.caption(t('Prediction completion') + f': {rate:.0%}')
                 st.caption(t('Completion measures workflow activity, not diagnostic quality.'))
