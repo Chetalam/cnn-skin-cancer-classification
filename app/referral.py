@@ -4,6 +4,7 @@ import math
 from datetime import datetime, timezone
 
 from translations import t
+from classification_info import show_classification_info
 
 TITLE = "What to do next: assessment and referral"
 NOTICE = "Use your clinical assessment and local referral protocol. The model cannot confirm or rule out cancer, choose treatment, or set referral urgency."
@@ -33,6 +34,10 @@ def checklist_text(prediction):
         raise ValueError('Saved prediction scores are incomplete.')
     if not prediction.get('model_name') or not prediction.get('created_at'):
         raise ValueError('Saved model version or prediction date is missing.')
+    if not isinstance(prediction.get('confidence'), (int, float)) or not math.isfinite(prediction['confidence']):
+        raise ValueError('Saved prediction scores are incomplete.')
+    if abs(prediction['confidence'] - scores[prediction['cancer_class']]) > 1e-6 or scores[prediction['cancer_class']] < max(scores.values()) - 1e-9:
+        raise ValueError('Saved class and scores are inconsistent.')
     clean = lambda value: ' '.join(str(value).split())
     saved_at = datetime.fromtimestamp(prediction['created_at'], timezone.utc).strftime('%d %b %Y, %H:%M UTC')
     lines = [t(TITLE), '', t('Saved prediction — decision support only'),
@@ -51,17 +56,21 @@ def checklist_text(prediction):
 
 
 def show_referral_guidance(key, prediction):
+    try:
+        checklist_text(prediction)
+    except ValueError as exc:
+        st.error(t(str(exc)))
+        return
+    show_classification_info(prediction)
     st.subheader(t(TITLE))
     st.info(t(NOTICE))
     st.warning(t(SCC_LIMITATION))
     for number, step in enumerate(STEPS, 1):
         st.write(f"{number}. {t(step)}")
-    try:
-        text = checklist_text(prediction)
-    except ValueError as exc:
-        st.error(t(str(exc)))
-        return
+    from referral_document import checklist_docx
     st.download_button(
-        t(DOWNLOAD), text, f"referral_review_{int(prediction['image_id'])}.txt",
-        mime="text/plain; charset=utf-8", key=key,
+        t('Download referral checklist as Word'), checklist_docx(prediction),
+        f"referral_review_{int(prediction['image_id'])}.docx",
+        mime='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        key=key,
     )
