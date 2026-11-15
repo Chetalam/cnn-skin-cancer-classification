@@ -72,18 +72,22 @@ with right:
                         db.record_prediction(user['id'], image_id, digest, result)
         except ValueError as exc:
             st.error(t(str(exc)))
-    if image is not None and st.session_state.get('saved_review'):
-        result = db.prediction_detail(user['id'], st.session_state['saved_review'])
-        st.success(t('Review saved in Reviews.'))
-        if result['status'] == 'predicted' and visibility_confirmed:
-            st.metric(t('Predicted class'), result['cancer_class'])
-            st.metric(t('Model score'), f"{result['confidence']:.1%}")
-            st.bar_chart({t('Model score'): result['scores']})
-            st.caption(t('Model version') + ': ' + result['model_name'])
-            show_referral_guidance('analysis_referral_checklist', result)
-        elif result['status'] == 'predicted':
-            st.info(t('A historical prediction is saved in Reviews. It does not establish that a lesion is present.'))
-        else:
-            st.info(t('Saved without a prediction. Upload the original image again to analyse it.'))
-        st.page_link('pages/3_History.py', label=t('View Reviews'))
     st.caption(t('Readability validation cannot confirm that the image depicts a skin lesion.'))
+
+# Render saved results across the page, outside the upload/control columns.
+if image is not None and st.session_state.get('saved_review'):
+    result = db.prediction_detail(user['id'], st.session_state['saved_review'])
+    st.divider()
+    st.success(t('Review saved in Reviews.'))
+    if result['status'] == 'predicted' and visibility_confirmed:
+        class_column, score_column = st.columns(2, gap='large')
+        class_column.metric(t('Predicted class'), result['cancer_class'])
+        score_column.metric(t('Model score'), f"{result['confidence']:.1%}")
+        st.bar_chart({t('Model score'): result['scores']})
+        st.caption(t('Model version') + ': ' + result['model_name'])
+        show_referral_guidance('analysis_referral_checklist', result)
+    elif result['status'] == 'predicted':
+        st.info(t('A historical prediction is saved in Reviews. It does not establish that a lesion is present.'))
+    else:
+        st.info(t('Saved without a prediction. Upload the original image again to analyse it.'))
+    st.page_link('pages/3_History.py', label=t('View Reviews'))
