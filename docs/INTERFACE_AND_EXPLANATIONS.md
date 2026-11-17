@@ -4,7 +4,7 @@ The system title is **A CNN Transfer Learning System for Multi-Class Skin Cancer
 
 ## Interface and reports
 
-The app uses teal, navy and light backgrounds, clearer cards and a responsive login banner. Existing role permissions, account handling and review archiving remain in place. Word reports include the saved class, all three scores, model version, referral guidance and handover fields. When a visual explanation has been generated, the report includes it on a separate page. Reports always use the saved prediction, rather than running a new classification for download.
+Authenticated pages use navy (#103F53), teal (#087F79), coral (#F07868), warm amber (#F2B84B), soft mint (#DDF3ED) and off-white (#F5F8FA) for consistent headings, metrics, controls, forms, navigation and tables. These protected-page refinements do **not** change the existing login and registration styling. Existing role permissions, account handling and review archiving remain in place. Word reports include the saved class, all three scores, model version, referral guidance and handover fields. When a visual explanation has been generated, the report includes it on a separate page. Reports always use the saved prediction, rather than running a new classification for download.
 
 ## Visual explanations
 
@@ -20,7 +20,7 @@ Method reference: https://captum.ai/api/occlusion.html. This project implements 
 
 **Automatic normal-skin or benign detection remains unimplemented.** The current checkpoint has only BCC, Melanoma and SCC outputs. Renaming a score or using a confidence threshold would not create a validated benign class.
 
-Both a visible-lesion check and an explicit healthcare-worker scope assessment are required. Normal skin, benign-looking lesions, other conditions and uncertain assessments block classification. Saving without prediction remains available. The backend requires explicit Boolean confirmations before model loading. These are human checks, not automated recognition; incorrect confirmation can still allow an unsuitable image through.
+The Analyse Image page asks one lesion-visibility question (Not sure / No lesion / normal skin / Yes). Not sure and No lesion / normal skin block classification. Selecting Yes shows a short three-class limitation notice and an unchecked acknowledgement: a visible lesion is not necessarily cancer, and the model classifies only BCC, Melanoma and SCC. Only Yes plus the explicit acknowledgement unlock experimental classification when the model is installed and preview consent is given. The backend checks both strict Boolean confirmations before model loading. Saving without a prediction remains available for all answers. These are worker assessments, **not automated benign, normal-skin or cancer recognition**; an unsuitable image can still be submitted following an incorrect human assessment.
 
 A real automated solution requires labelled examples of normal skin, benign lesions and unrelated images, alongside the existing cancer classes. Normal skin and benign lesions should remain distinct; neither is synonymous with proven absence of cancer. Train and evaluate a suitability model or expanded classifier with patient/lesion-separated development and held-out evaluation data. Report false acceptance of unsuitable images and missed cancer cases, per-class metrics and subgroup sample counts. Choose thresholds on development data, not the existing repeatedly inspected test set. No dataset, training run or measured improvement is claimed by this UI update.
 
@@ -39,6 +39,6 @@ Both verification scripts must print PASS before checking predictions. The expla
 
 ## Test evidence
 
-Tests cover known-region sensitivity, neutral maps for unchanged scores, invalid model outputs, explicit scope gating before loading, wrong-image rejection, historical model/score mismatch rejection and Word export identity. A small serialized TensorFlow fixture checks decoding, loading and the complete 49-region path; it is a software test, not a clinical model. Streamlit AppTest checks the login page, Kiswahili and worker/administrator pages against disposable accounts and a disposable database. Existing account, inference, reporting, analytics and archiving tests remain part of the suite.
+Tests cover known-region sensitivity, neutral maps for unchanged scores, invalid model outputs, strict lesion-visibility and acknowledgement gating before loading, wrong-image rejection, historical model/score mismatch rejection and Word export identity. A small serialized TensorFlow fixture checks decoding, loading and the complete 49-region path; it is a software test, not a clinical model. Streamlit AppTest checks the login page, Kiswahili and worker/administrator pages against disposable accounts and a disposable database. Existing account, inference, reporting, analytics and archiving tests remain part of the suite.
 
 The developer environment does not contain the private deployed checkpoint or user database. The two local verification scripts therefore remain necessary on the deployment computer. Local tests do not establish clinical performance or automatic normal-skin detection.
