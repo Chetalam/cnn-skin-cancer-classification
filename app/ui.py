@@ -4,6 +4,8 @@ import streamlit as st
 import db
 
 from translations import t, language_selector
+from branding import SHORT_NAME
+from html import escape
 
 
 DISCLAIMER = (
@@ -42,56 +44,30 @@ def setup(title, protected=True):
     st.markdown(
         """
         <style>
-        .stApp {
-            background: #ffffff;
-            color: #18324d;
-        }
-
-        [data-testid="stSidebar"] {
-            background: #eff6ff;
-            border-right: 1px solid #dbeafe;
-        }
-
-        [data-testid="stSidebarNav"] {
-            display: none !important;
-        }
-
-        .stDeployButton,
-        [data-testid="stAppDeployButton"] {
-            display: none !important;
-        }
-
-        [data-testid="stMain"] {
-            overflow-y: auto;
-        }
-
-        .block-container {
-            /* Clear Streamlit’s fixed toolbar before the page caption. */
-            padding-top: 6rem;
-            max-width: 1200px;
-        }
-
-        h1, h2, h3 {
-            color: #124c8c !important;
-        }
-
-        [data-testid="stMetric"] {
-            background: #f0f7ff;
-            border: 1px solid #dbeafe;
-            border-radius: 12px;
-            padding: 16px;
-        }
-
-        [data-testid="stForm"] {
-            border: 1px solid #dbeafe;
-            border-radius: 12px;
-            background: #fcfdff;
-        }
+        .stApp {background:linear-gradient(145deg,#f7fafc,#eef5f5);color:#19334a}
+        [data-testid="stSidebar"] {background:#e9f2f3;border-right:1px solid #d1e2e5}
+        [data-testid="stSidebarNav"],.stDeployButton,[data-testid="stAppDeployButton"] {display:none!important}
+        [data-testid="stMain"] {overflow-y:auto}
+        .block-container {padding-top:6rem;padding-bottom:3rem;max-width:1320px}
+        h1,h2,h3 {color:#153e53!important;letter-spacing:-.025em}
+        [data-testid="stMetric"] {background:#fff;border:1px solid #d5e5e9;border-top:4px solid #087f79;border-radius:16px;padding:20px;box-shadow:0 5px 20px #19334a08}
+        [data-testid="stForm"],[data-testid="stExpander"] {background:#fff;border:1px solid #d5e5e9;border-radius:16px}
+        [data-testid="stForm"] {padding:24px}
+        .project-hero {padding:32px;border-radius:22px;background:linear-gradient(120deg,#103f53,#086e69);margin-bottom:26px;color:#fff}
+        .project-hero h1 {color:#fff!important;font-size:clamp(1.65rem,2.6vw,2.55rem);line-height:1.22;max-width:1050px;margin:10px 0 18px}
+        .project-hero p {color:#e1f1f2;font-size:1.05rem;max-width:850px;margin:0}
+        .project-eyebrow {font-size:.85rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#b6e4df}
+        .feature-card {background:#fff;border:1px solid #d5e5e9;border-radius:16px;padding:19px 22px;margin-bottom:14px}
+        .feature-card h3 {font-size:1.1rem;margin:0 0 7px}
+        .feature-card p {margin:0;color:#506879;line-height:1.6}
+        .sidebar-brand {font-size:1.05rem;font-weight:700;color:#125d61;margin:0 0 16px}
+        @media(max-width:640px) {.project-hero {padding:22px}.block-container {padding-left:1rem;padding-right:1rem}}
         </style>
         """,
         unsafe_allow_html=True,
     )
 
+    st.sidebar.markdown('<div class="sidebar-brand">' + escape(t(SHORT_NAME)) + '</div>', unsafe_allow_html=True)
     language_selector()
     db.initialize()
 

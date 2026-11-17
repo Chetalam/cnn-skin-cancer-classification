@@ -3,6 +3,7 @@ import streamlit as st
 import math
 from datetime import datetime, timezone
 
+from branding import PROJECT_NAME
 from translations import t
 from classification_info import show_classification_info
 
@@ -40,7 +41,7 @@ def checklist_text(prediction):
         raise ValueError('Saved class and scores are inconsistent.')
     clean = lambda value: ' '.join(str(value).split())
     saved_at = datetime.fromtimestamp(prediction['created_at'], timezone.utc).strftime('%d %b %Y, %H:%M UTC')
-    lines = [t(TITLE), '', t('Saved prediction — decision support only'),
+    lines = [PROJECT_NAME, "", t(TITLE), '', t('Saved prediction — decision support only'),
              f"{t('Review ID')}: {prediction['image_id']}",
              f"{t('Case reference')}: {clean(prediction.get('case_reference') or '—')}",
              f"{t('Prediction saved')}: {saved_at}",
@@ -55,7 +56,7 @@ def checklist_text(prediction):
     return "\n".join(lines) + "\n"
 
 
-def show_referral_guidance(key, prediction):
+def show_referral_guidance(key, prediction, explanation=None):
     try:
         checklist_text(prediction)
     except ValueError as exc:
@@ -69,7 +70,7 @@ def show_referral_guidance(key, prediction):
         st.write(f"{number}. {t(step)}")
     from referral_document import checklist_docx
     st.download_button(
-        t('Download referral checklist as Word'), checklist_docx(prediction),
+        t('Download referral checklist as Word'), checklist_docx(prediction, explanation=explanation),
         f"referral_review_{int(prediction['image_id'])}.docx",
         mime='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         key=key,
