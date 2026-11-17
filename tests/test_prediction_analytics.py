@@ -82,7 +82,7 @@ class InferenceContract(unittest.TestCase):
             def __call__(self,inputs,training=False):return np.array([[.1,.8,.1]])
         out=io.BytesIO();Image.new('RGB',(10,10)).save(out,format='PNG')
         with patch.object(inference,'_load_model',return_value=(FakeModel(),threading.Lock())),patch.object(inference,'prepare_image',return_value=np.zeros((1,224,224,3))):
-            result=inference.predict_image(out.getvalue(), lesion_confirmed=True, scope_confirmed=True)
+            result=inference.predict_image(out.getvalue(), lesion_confirmed=True, limitation_acknowledged=True)
         self.assertEqual(result['scores']['Melanoma'],.8)
         self.assertEqual(result['model_sha256'],self.meta['model_sha256'])
     def test_mismatched_metrics_cannot_be_displayed_as_active_results(self):
