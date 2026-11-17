@@ -76,6 +76,47 @@ class Explanations(unittest.TestCase):
         self.assertIn('Review ID: 6',doc.sections[0].footer.paragraphs[0].text)
         self.assertEqual(len(doc.tables[0].rows),4)
 
+    def test_explanation_word_legend_is_clear_and_bilingual(self):
+        from branding import SHORT_NAME
+        from explainability import (
+            COLOUR_GUIDE_RED, COLOUR_GUIDE_BLUE,
+            COLOUR_GUIDE_EXAMPLE, COLOUR_GUIDE_CAUTION,
+        )
+        self.assertEqual(SHORT_NAME, 'DermaLens')
+        prediction = fixture()
+        image = io.BytesIO()
+        Image.new('RGB', (40, 40), (180, 170, 160)).save(image, format='PNG')
+        explanation = dict(
+            method=xai.METHOD, image_id=prediction['image_id'],
+            image_hash=prediction['image_sha256'],
+            model_name=prediction['model_name'],
+            cancer_class=prediction['cancer_class'],
+            scores=dict(prediction['scores']),
+            overlay=image.getvalue(), max_abs_pp=20.0,
+            regions=[
+                dict(row=1, column=1, drop_pp=20.0),
+                dict(row=1, column=2, drop_pp=-3.0),
+            ],
+        )
+        doc = Document(io.BytesIO(checklist_docx(prediction, explanation)))
+        text = '\\n'.join(p.text for p in doc.paragraphs)
+        for expected in (COLOUR_GUIDE_RED, COLOUR_GUIDE_BLUE,
+                         COLOUR_GUIDE_EXAMPLE, COLOUR_GUIDE_CAUTION,
+                         PROJECT_NAME):
+            self.assertIn(expected, text)
+        self.assertEqual(len(doc.inline_shapes), 1)
+        self.assertIn('DermaLens', doc.sections[0].footer.paragraphs[0].text)
+
+        # The downloadable Word page must not silently fall back to English.
+        with patch('translations.current_language', return_value='sw'):
+            translated = Document(io.BytesIO(checklist_docx(prediction, explanation)))
+        translated_text = '\\n'.join(p.text for p in translated.paragraphs)
+        for required in ('Sehemu NYEKUNDU:', 'Sehemu za BLUU:',
+                         'MUHIMU: Nyekundu HAIMAANISHI saratani.',
+                         'pointi 20 za asilimia'):
+            self.assertIn(required, translated_text)
+        self.assertEqual(len(translated.inline_shapes), 1)
+
     def test_acknowledgement_is_image_bound_and_bilingual(self):
         from streamlit.testing.v1 import AppTest
         from eligibility import classification_allowed, LIMITATION, ACKNOWLEDGEMENT
