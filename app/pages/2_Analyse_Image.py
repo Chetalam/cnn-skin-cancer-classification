@@ -78,7 +78,6 @@ with right:
                         db.record_prediction(user['id'], image_id, digest, result)
         except ValueError as exc:
             st.error(t(str(exc)))
-    st.caption(t('Readability validation cannot confirm that the image depicts a skin lesion.'))
 
 # Render saved results across the page, outside the upload/control columns.
 if image is not None and st.session_state.get('saved_review'):
