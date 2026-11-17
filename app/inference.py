@@ -75,11 +75,11 @@ def prepare_image(raw, metadata):
     return tf.keras.applications.resnet50.preprocess_input(image)[None, ...]
 
 
-def predict_image(raw, *, lesion_confirmed=False, scope_confirmed=False):
+def predict_image(raw, *, lesion_confirmed=False, limitation_acknowledged=False):
     if lesion_confirmed is not True:
         raise ValueError('A clearly visible lesion must be confirmed before experimental classification. This is a user check, not automated lesion detection.')
-    if scope_confirmed is not True:
-        raise ValueError("Classification requires a healthcare worker to confirm that this is a clinically suspected BCC, Melanoma or SCC lesion. Normal skin, benign-looking lesions and uncertain images are outside this model scope.")
+    if limitation_acknowledged is not True:
+        raise ValueError('The healthcare worker must acknowledge that a visible lesion is not necessarily cancer and that this model only classifies BCC, Melanoma and SCC. It cannot identify normal skin or benign lesions.')
     # Reuse upload validation for byte size, genuine type and pixel-limit enforcement.
     from images import validate_image
     validate_image(raw)
