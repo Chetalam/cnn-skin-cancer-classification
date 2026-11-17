@@ -1618,3 +1618,11 @@ CATALOG.update({'A visible lesion can be benign. This three-class model has no n
  'Visual explanation': 'Maelezo ya picha',
  'pp means percentage points, not a change in cancer risk.': 'pp ni tofauti ya alama za asilimia, si '
                                                              'mabadiliko ya hatari ya saratani.'})
+
+# Visible-lesion workflow replaces the earlier separate scope-assessment radio.
+# Translation keys are stored unchanged in English for predictable UI lookups.
+CATALOG.update({
+    'No lesion / normal skin': 'Hakuna kidonda / ngozi ya kawaida',
+    'A visible skin lesion is not necessarily cancer. This model only classifies BCC, Melanoma and SCC; it cannot identify normal skin or benign lesions.': 'Kidonda kinachoonekana kwenye ngozi si lazima kiwe saratani. Modeli hii huainisha BCC, Melanoma na SCC pekee; haiwezi kutambua ngozi ya kawaida au vidonda visivyo vya saratani.',
+    'I understand this three-class limitation and that the result is not a diagnosis.': 'Ninaelewa kikomo hiki cha makundi matatu na kwamba matokeo si utambuzi wa ugonjwa.',
+})
