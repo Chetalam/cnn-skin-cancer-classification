@@ -25,6 +25,14 @@ class RefreshPages(unittest.TestCase):
         for role,email in [('healthcare_worker','worker@example.test'),('system_administrator','admin@example.test')]:
             db.register('Test user',email,self.password,'QA Clinic',requested_role=role)
 
+    def test_streamlit_builtin_menu_is_hidden(self):
+        # Keep Streamlit's development menu out of the user-facing app.
+        import tomllib
+        with (ROOT / '.streamlit' / 'config.toml').open('rb') as source:
+            config = tomllib.load(source)
+        self.assertEqual(config['client']['toolbarMode'], 'minimal')
+        self.assertIs(config['ui']['hideTopBar'], True)
+
     def test_login_and_language_persist_across_pages(self):
         at=AppTest.from_file(str(ROOT/'app/streamlit_app.py')).run()
         self.assertFalse(at.exception)
