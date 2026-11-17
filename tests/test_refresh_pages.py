@@ -25,6 +25,14 @@ class RefreshPages(unittest.TestCase):
         for role,email in [('healthcare_worker','worker@example.test'),('system_administrator','admin@example.test')]:
             db.register('Test user',email,self.password,'QA Clinic',requested_role=role)
 
+    def test_streamlit_builtin_menu_is_hidden(self):
+        # Keep Streamlit's development menu out of the user-facing app.
+        import tomllib
+        with (ROOT / '.streamlit' / 'config.toml').open('rb') as source:
+            config = tomllib.load(source)
+        self.assertEqual(config['client']['toolbarMode'], 'minimal')
+        self.assertIs(config['ui']['hideTopBar'], True)
+
     def test_login_and_language_persist_across_pages(self):
         at=AppTest.from_file(str(ROOT/'app/streamlit_app.py')).run()
         self.assertFalse(at.exception)
@@ -33,6 +41,26 @@ class RefreshPages(unittest.TestCase):
         at.run()
         self.assertFalse(at.exception)
         self.assertTrue(any('Kagua picha' in m.value for m in at.markdown))
+
+    def test_unwanted_notices_are_absent(self):
+        # The login banner and the dashboard checkpoint callout were
+        # deliberately removed; clinical protections remain in the analysis UI.
+        welcome = AppTest.from_file(str(ROOT/'app/streamlit_app.py')).run()
+        self.assertFalse(welcome.exception)
+        self.assertFalse(any(
+            'Research use only. SCC detection remains limited' in element.value
+            for element in welcome.warning
+        ))
+
+        token = db.sign_in('worker@example.test', self.password)
+        dashboard = AppTest.from_file(str(ROOT/'app/streamlit_app.py')).run()
+        dashboard.session_state['auth_token'] = token
+        dashboard.switch_page('pages/1_Dashboard.py').run(timeout=20)
+        self.assertFalse(dashboard.exception)
+        self.assertFalse(any(
+            'A completed checkpoint can be used for experimental predictions' in element.value
+            for element in dashboard.info
+        ))
 
     def test_worker_and_admin_pages(self):
         for email,pages in [('worker@example.test',['1_Dashboard.py','2_Analyse_Image.py','3_History.py','10_Analytics.py','4_Account.py']),('admin@example.test',['1_Dashboard.py','7_User_Management.py','5_Dataset_Status.py','9_Database_Guide.py','10_Analytics.py'])]:

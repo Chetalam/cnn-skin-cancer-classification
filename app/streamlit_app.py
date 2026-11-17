@@ -82,4 +82,3 @@ with right:
         ('Keep track', 'Review saved records, restore archived reviews and view activity analytics.'),
     ]:
         st.markdown('<div class="feature-card"><h3>' + escape(t(heading)) + '</h3><p>' + escape(t(description)) + '</p></div>', unsafe_allow_html=True)
-    st.warning(t('Research use only. SCC detection remains limited and darker-skin reliability is not established. This system cannot confirm or rule out cancer.'))

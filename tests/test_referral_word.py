@@ -61,6 +61,7 @@ show_referral_guidance('fixture',dict(image_id=6,status='predicted',cancer_class
         self.assertTrue(any(s.value=='Kuhusu aina inayoshukiwa' for s in app.subheader))
         self.assertEqual(len(app.get('download_button')),1)
         self.assertIn('Word',app.get('download_button')[0].proto.label)
+        self.assertFalse(any(e.label == 'Vyanzo vya elimu' for e in app.expander))
 
 
 if __name__=='__main__':unittest.main()

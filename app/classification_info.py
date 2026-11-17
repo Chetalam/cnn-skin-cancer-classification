@@ -71,6 +71,3 @@ def show_classification_info(prediction):
         st.write(interpretation(prediction))
         st.write(t(LIMIT))
         st.caption(t(CLOSED_SET))
-    with st.expander(t('Educational sources')):
-        for title, url in SOURCES:
-            st.markdown(f'[{title}]({url})')

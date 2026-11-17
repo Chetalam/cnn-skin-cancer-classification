@@ -67,6 +67,190 @@ def setup(title, protected=True):
         unsafe_allow_html=True,
     )
 
+    # Apply the warmer, more vibrant theme only to protected (signed-in)
+    # pages. Login and registration retain their established appearance.
+    if protected:
+        st.markdown(
+            """
+            <style>
+            :root {
+                --skin-navy: #103F53;
+                --skin-teal: #087F79;
+                --skin-coral: #F07868;
+                --skin-amber: #F2B84B;
+                --skin-mint: #DDF3ED;
+                --skin-white: #F5F8FA;
+            }
+            .stApp {
+                background:
+                    radial-gradient(circle at 95% 1%, rgba(240,120,104,.10), transparent 27%),
+                    radial-gradient(circle at 5% 12%, rgba(8,127,121,.09), transparent 25%),
+                    var(--skin-white);
+                color: var(--skin-navy);
+            }
+            [data-testid="stSidebar"] {
+                background: linear-gradient(175deg, #ecf8f4 0%, var(--skin-mint) 100%);
+                border-right: 1px solid #c4ddd6;
+            }
+            [data-testid="stSidebar"] .sidebar-brand {
+                color: var(--skin-navy);
+                padding: .8rem .85rem;
+                background: #ffffffcc;
+                border-radius: 12px;
+                border-left: 4px solid var(--skin-coral);
+                box-shadow: 0 3px 12px #103f5309;
+            }
+            [data-testid="stSidebar"] a[data-testid="stPageLink-NavLink"],
+            [data-testid="stSidebar"] a[data-testid="stPageLink-NavLink"] span,
+            [data-testid="stSidebar"] a {
+                border-radius: 10px;
+                transition: background-color .18s ease, color .18s ease;
+            }
+            [data-testid="stSidebar"] a:hover {
+                background: #ffffffb8;
+            }
+            [data-testid="stSidebar"] a[aria-current="page"],
+            [data-testid="stSidebar"] a[aria-current="page"]:hover,
+            [data-testid="stSidebar"] a[aria-selected="true"] {
+                color: var(--skin-navy);
+                background: #ffffff;
+                box-shadow: inset 4px 0 var(--skin-coral), 0 2px 10px #103f530f;
+                font-weight: 650;
+            }
+            [data-testid="stMain"] .block-container {
+                padding-top: 5.5rem;
+                padding-bottom: 3.5rem;
+            }
+            [data-testid="stMain"] h1,
+            [data-testid="stMain"] h2,
+            [data-testid="stMain"] h3 {
+                color: var(--skin-navy) !important;
+                letter-spacing: -.025em;
+            }
+            [data-testid="stMain"] h1 {
+                line-height: 1.18;
+                margin-bottom: .35rem;
+            }
+            [data-testid="stMain"] h1::after {
+                content: "";
+                display: block;
+                width: 4.2rem;
+                height: .27rem;
+                margin-top: .7rem;
+                border-radius: 99px;
+                background: linear-gradient(90deg, var(--skin-coral) 0 55%, var(--skin-amber) 55% 100%);
+            }
+            [data-testid="stMain"] h2 {
+                border-bottom: 1px solid #dbe9e7;
+                padding-bottom: .38rem;
+            }
+            [data-testid="stMetric"] {
+                background: #ffffff;
+                border: 1px solid #d4e7e1;
+                border-top: 4px solid var(--skin-teal);
+                border-radius: 16px;
+                padding: 1.15rem 1.2rem;
+                box-shadow: 0 5px 22px #103f530b;
+            }
+            [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:nth-child(3n+2) [data-testid="stMetric"] {
+                border-top-color: var(--skin-coral);
+            }
+            [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:nth-child(3n) [data-testid="stMetric"] {
+                border-top-color: #c58b19;
+            }
+            [data-testid="stMetricValue"] {
+                color: var(--skin-navy);
+                font-weight: 750;
+            }
+            [data-testid="stMetricLabel"] {
+                color: #395969;
+                font-weight: 600;
+            }
+            [data-testid="stForm"],
+            [data-testid="stExpander"],
+            [data-testid="stVerticalBlockBorderWrapper"] > div {
+                border-color: #d4e6e3;
+                border-radius: 15px;
+            }
+            [data-testid="stForm"], [data-testid="stExpander"] {
+                background: #ffffffed;
+                box-shadow: 0 3px 16px #103f5308;
+            }
+            [data-testid="stMain"] [data-testid="stButton"] button[kind="primary"],
+            [data-testid="stMain"] [data-testid="stFormSubmitButton"] button[kind="primary"] {
+                background: var(--skin-teal);
+                color: #ffffff;
+                border: 1px solid var(--skin-teal);
+                border-radius: 11px;
+                box-shadow: 0 4px 10px #087f7926;
+                font-weight: 650;
+            }
+            [data-testid="stMain"] [data-testid="stButton"] button[kind="primary"]:hover,
+            [data-testid="stMain"] [data-testid="stFormSubmitButton"] button[kind="primary"]:hover {
+                background: var(--skin-navy);
+                border-color: var(--skin-navy);
+            }
+            [data-testid="stMain"] [data-testid="stButton"] button[kind="secondary"],
+            [data-testid="stMain"] [data-testid="stFormSubmitButton"] button[kind="secondary"],
+            [data-testid="stMain"] [data-testid="stDownloadButton"] button {
+                background: #ffffff;
+                color: var(--skin-navy);
+                border: 1px solid #a4cec6;
+                border-radius: 11px;
+                font-weight: 600;
+            }
+            [data-testid="stMain"] [data-testid="stButton"] button[kind="secondary"]:hover,
+            [data-testid="stMain"] [data-testid="stDownloadButton"] button:hover {
+                background: var(--skin-mint);
+                color: var(--skin-navy);
+                border-color: var(--skin-teal);
+            }
+            [data-testid="stMain"] button:focus-visible,
+            [data-testid="stSidebar"] a:focus-visible,
+            [data-testid="stMain"] a:focus-visible {
+                outline: 3px solid #b07a13;
+                outline-offset: 3px;
+            }
+            [data-testid="stMain"] input:focus,
+            [data-testid="stMain"] textarea:focus,
+            [data-testid="stMain"] [role="combobox"]:focus {
+                border-color: var(--skin-teal);
+                box-shadow: 0 0 0 2px #087f7928;
+            }
+            [data-testid="stMain"] [data-testid="stTable"],
+            [data-testid="stMain"] [data-testid="stDataFrame"] {
+                border: 1px solid #d8e7e6;
+                background: #ffffff;
+                border-radius: 13px;
+                overflow: hidden;
+            }
+            [data-testid="stMain"] [data-testid="stTabs"] [role="tab"][aria-selected="true"] {
+                color: var(--skin-navy);
+                font-weight: 700;
+            }
+            [data-testid="stMain"] [data-testid="stTabs"] [role="tab"]:hover {
+                color: var(--skin-teal);
+            }
+            [data-testid="stMain"] [data-testid="stAlert"] {
+                border-radius: 12px;
+                border-color: #ccdfda;
+            }
+            [data-testid="stMain"] hr {
+                border-color: #d6e7e1;
+            }
+            @media (max-width: 640px) {
+                [data-testid="stMain"] .block-container {
+                    padding: 5rem 1rem 2.5rem;
+                }
+                [data-testid="stMetric"] {
+                    padding: .85rem 1rem;
+                }
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+
     st.sidebar.markdown('<div class="sidebar-brand">' + escape(t(SHORT_NAME)) + '</div>', unsafe_allow_html=True)
     language_selector()
     db.initialize()

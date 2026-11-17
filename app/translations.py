@@ -1618,3 +1618,22 @@ CATALOG.update({'A visible lesion can be benign. This three-class model has no n
  'Visual explanation': 'Maelezo ya picha',
  'pp means percentage points, not a change in cancer risk.': 'pp ni tofauti ya alama za asilimia, si '
                                                              'mabadiliko ya hatari ya saratani.'})
+
+# Visible-lesion workflow replaces the earlier separate scope-assessment radio.
+# Translation keys are stored unchanged in English for predictable UI lookups.
+CATALOG.update({
+    'No lesion / normal skin': 'Hakuna kidonda / ngozi ya kawaida',
+    'A visible skin lesion is not necessarily cancer. This model only classifies BCC, Melanoma and SCC; it cannot identify normal skin or benign lesions.': 'Kidonda kinachoonekana kwenye ngozi si lazima kiwe saratani. Modeli hii huainisha BCC, Melanoma na SCC pekee; haiwezi kutambua ngozi ya kawaida au vidonda visivyo vya saratani.',
+    'I understand this three-class limitation and that the result is not a diagnosis.': 'Ninaelewa kikomo hiki cha makundi matatu na kwamba matokeo si utambuzi wa ugonjwa.',
+})
+
+# Explain the meaning of the model's red/blue score-change map in plain Kiswahili.
+CATALOG.update({
+    'How to read the red and blue areas': 'Jinsi ya kuelewa sehemu nyekundu na bluu',
+    'The system checks 49 small parts of the image. It hides one part at a time and measures how the model score for its predicted class changes.': 'Mfumo hukagua sehemu 49 ndogo za picha. Huficha sehemu moja kwa wakati mmoja na kupima jinsi alama ya modeli kwa kundi ililotabiriwa inavyobadilika.',
+    'RED areas: When the system hid one of these areas, the model score went down. Information in this area helped produce the original score.': 'Sehemu NYEKUNDU: Mfumo ulipoficha sehemu mojawapo, alama ya modeli ilipungua. Taarifa katika sehemu hiyo zilichangia alama ya awali.',
+    'BLUE areas: When the system hid one of these areas, the model score went up. Information in this area had reduced the original score.': 'Sehemu za BLUU: Mfumo ulipoficha sehemu mojawapo, alama ya modeli iliongezeka. Taarifa katika sehemu hiyo zilikuwa zimepunguza alama ya awali.',
+    'Stronger red or blue means a larger score change compared with other areas in this image. Uncoloured areas had little or no measured effect.': 'Rangi nyekundu au bluu iliyojaa zaidi inaonyesha mabadiliko makubwa zaidi ya alama ikilinganishwa na sehemu nyingine za picha hii. Sehemu zisizo na rangi zilikuwa na athari ndogo au hazikuwa na athari iliyopimika.',
+    'Example: A Melanoma model score of 75% falls to 55% when one area is hidden. That is a drop of 20 percentage points in the MODEL SCORE, not a 20% change in a person\'s risk of cancer.': 'Mfano: Alama ya modeli ya Melanoma ya 75% inashuka hadi 55% wakati sehemu moja imefichwa. Huo ni upungufu wa pointi 20 za asilimia kwenye ALAMA YA MODELI, si mabadiliko ya 20% katika hatari ya mtu kupata saratani.',
+    'IMPORTANT: Red does NOT mean cancer. Blue does NOT mean healthy or safe. The colours do not show where cancer is located, confirm a diagnosis, or replace a healthcare worker\'s assessment.': 'MUHIMU: Nyekundu HAIMAANISHI saratani. Bluu HAIMAANISHI ngozi yenye afya au salama. Rangi hizi hazionyeshi eneo halisi la saratani, hazithibitishi utambuzi wa ugonjwa, wala hazichukui nafasi ya tathmini ya mhudumu wa afya.',
+})

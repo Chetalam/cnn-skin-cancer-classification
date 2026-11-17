@@ -31,4 +31,3 @@ else:
     analyse, reviews = st.columns(2)
     analyse.page_link('pages/2_Analyse_Image.py', label=t('Open Analyse Image'), icon='🔬')
     reviews.page_link('pages/3_History.py', label=t('View Reviews'), icon='📋')
-    st.info(t('A completed checkpoint can be used for experimental predictions. SCC and skin-type performance requirements remain unmet.'))

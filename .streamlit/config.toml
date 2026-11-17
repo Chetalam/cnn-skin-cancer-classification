@@ -11,3 +11,11 @@ maxUploadSize = 20
 
 [browser]
 gatherUsageStats = false
+
+# Hide Streamlit's built-in top-right menu (Rerun, Settings, Print,
+# Record a screencast and developer options) for DermaLens users.
+[client]
+toolbarMode = "minimal"
+
+[ui]
+hideTopBar = true

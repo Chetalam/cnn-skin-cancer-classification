@@ -1,13 +1,31 @@
-"""Explicit human scope check; not an automated benign/normal detector."""
+"""Image-bound acknowledgement for an experimental three-class model.
+
+The worker, not the software, judges whether a lesion is visible. This is
+not an automatic normal-skin, benign-lesion or cancer detector.
+"""
 import streamlit as st
 from translations import t
 
-OPTIONS = ['Not assessed / unsure', 'Normal skin / no lesion',
-           'Benign-looking lesion / another condition', 'Clinically suspected BCC, Melanoma or SCC']
+LIMITATION = (
+    'A visible skin lesion is not necessarily cancer. This model only '
+    'classifies BCC, Melanoma and SCC; it cannot identify normal skin '
+    'or benign lesions.'
+)
+ACKNOWLEDGEMENT = (
+    'I understand this three-class limitation and that the result is not a diagnosis.'
+)
 
-def scope_control(digest):
-    choice = st.radio(t('Clinical scope assessment'), OPTIONS, format_func=t, key='image_scope_' + digest)
-    st.caption(t('A visible lesion can be benign. This three-class model has no normal or benign class. This check records your assessment; it is not automatic detection.'))
-    if choice != OPTIONS[-1]:
-        st.info(t('Classification is blocked for this assessment. You can save the review without a prediction and arrange clinical assessment.'))
-    return choice == OPTIONS[-1]
+
+def classification_allowed(visibility, acknowledged):
+    """Require a visible lesion AND an explicit Boolean acknowledgement."""
+    return visibility == 'Yes' and acknowledged is True
+
+
+def acknowledgement_control(digest):
+    """Show one acknowledgement only for a worker who selected Yes.
+
+    The checkbox key binds consent to the exact uploaded image; uploading
+    another image creates a new, unchecked control.
+    """
+    st.info(t(LIMITATION))
+    return st.checkbox(t(ACKNOWLEDGEMENT), key='lesion_limitation_ack_' + digest)
