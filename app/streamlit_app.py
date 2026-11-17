@@ -1,5 +1,5 @@
 from html import escape
-from branding import PROJECT_NAME, DESCRIPTION
+from branding import DESCRIPTION
 from translations import t, display_data, translated_format, language_selector
 import streamlit as st
 import db
@@ -14,7 +14,7 @@ def open_account_page(user):
 user = setup('Welcome', protected=False)
 if user:
     open_account_page(user)
-st.markdown('<section class="project-hero"><div class="project-eyebrow">' + escape(t('Welcome')) + '</div><h1>' + escape(PROJECT_NAME) + '</h1><p>' + escape(t(DESCRIPTION)) + '</p></section>', unsafe_allow_html=True)
+st.markdown('<section class="project-hero"><h1>' + escape(t('Welcome to DermaLens')) + '</h1><p>' + escape(t(DESCRIPTION)) + '</p></section>', unsafe_allow_html=True)
 st.caption(t('Research decision support for healthcare workers. Clinical judgement remains essential.'))
 flash()
 left, right = st.columns([1.15, 1], gap='large')
