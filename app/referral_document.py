@@ -14,7 +14,7 @@ from explainability import (
     COLOUR_GUIDE_BLUE, COLOUR_GUIDE_STRENGTH,
     COLOUR_GUIDE_EXAMPLE, COLOUR_GUIDE_CAUTION,
 )
-from classification_info import CLASS_INFO, ABOUT, WHY, GENERAL_ONLY, LIMIT, CLOSED_SET, SOURCES, interpretation
+from classification_info import CLASS_INFO, ABOUT, WHY, GENERAL_ONLY, LIMIT, CLOSED_SET, interpretation
 
 
 def checklist_docx(prediction, explanation=None):
@@ -119,12 +119,6 @@ def checklist_docx(prediction, explanation=None):
         p.add_run(t(field)).bold = True
         p = doc.add_paragraph('________________________________________________________________')
         p.paragraph_format.space_after = Pt(12)
-    doc.add_heading(t('Educational sources'), 1)
-    for title, url in SOURCES:
-        p = doc.add_paragraph(title + '\n' + url)
-        p.paragraph_format.space_after = Pt(5)
-        for run in p.runs:
-            run.font.size = Pt(9)
     if explanation is not None:
         doc.add_page_break()
         doc.add_heading(t('Visual explanation'), 1)
