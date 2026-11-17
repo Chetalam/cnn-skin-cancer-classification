@@ -13,6 +13,36 @@ from images import validate_image
 METHOD = 'Occlusion sensitivity v1; 7 x 7 tiles; mean RGB replacement'
 LIMITATION = ('This map shows how masking image regions changes a model score. It does not identify a lesion boundary or prove a diagnosis. Background, lighting and the replacement colour can affect the result. It cannot establish normal skin or rule out cancer.')
 
+# Plain-language colour guide shared by the app and the Word referral report.
+# These describe changes in MODEL SCORES, never cancer locations or cancer risk.
+COLOUR_GUIDE_TITLE = 'How to read the red and blue areas'
+COLOUR_GUIDE_INTRO = (
+    'The system checks 49 small parts of the image. It hides one part at a '
+    'time and measures how the model score for its predicted class changes.'
+)
+COLOUR_GUIDE_RED = (
+    'RED areas: When the system hid one of these areas, the model score '
+    'went down. Information in this area helped produce the original score.'
+)
+COLOUR_GUIDE_BLUE = (
+    'BLUE areas: When the system hid one of these areas, the model score '
+    'went up. Information in this area had reduced the original score.'
+)
+COLOUR_GUIDE_STRENGTH = (
+    'Stronger red or blue means a larger score change compared with other '
+    'areas in this image. Uncoloured areas had little or no measured effect.'
+)
+COLOUR_GUIDE_EXAMPLE = (
+    'Example: A Melanoma model score of 75% falls to 55% when one area is '
+    'hidden. That is a drop of 20 percentage points in the MODEL SCORE, '
+    'not a 20% change in a person\'s risk of cancer.'
+)
+COLOUR_GUIDE_CAUTION = (
+    'IMPORTANT: Red does NOT mean cancer. Blue does NOT mean healthy or '
+    'safe. The colours do not show where cancer is located, confirm '
+    'a diagnosis, or replace a healthcare worker\'s assessment.'
+)
+
 
 def validate_scores(scores, count):
     scores = np.asarray(scores, dtype=float)
