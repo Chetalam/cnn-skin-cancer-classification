@@ -48,11 +48,11 @@ class Explanations(unittest.TestCase):
         for values in ([[.5,.5,.5]], [[np.nan,.1,.2]], [[-.1,.2,.9]], [[.8,.2]]):
             with self.assertRaises(ValueError):xai.validate_scores(values,1)
 
-    def test_scope_requires_boolean_confirmation_before_loading(self):
+    def test_acknowledgement_requires_boolean_confirmation_before_loading(self):
         for answer in (False,None,'Yes',1):
             with patch.object(inference,'inspect_package') as inspect:
                 with self.assertRaises(ValueError):
-                    inference.predict_image(b'unused',lesion_confirmed=True,scope_confirmed=answer)
+                    inference.predict_image(b'unused',lesion_confirmed=True,limitation_acknowledged=answer)
                 inspect.assert_not_called()
 
     def test_original_image_rejected_before_loading(self):
@@ -76,18 +76,39 @@ class Explanations(unittest.TestCase):
         self.assertIn('Review ID: 6',doc.sections[0].footer.paragraphs[0].text)
         self.assertEqual(len(doc.tables[0].rows),4)
 
-    def test_scope_widget_defaults_blocked_and_translates(self):
+    def test_acknowledgement_is_image_bound_and_bilingual(self):
         from streamlit.testing.v1 import AppTest
-        code="from eligibility import scope_control\nimport streamlit as st\nst.write(scope_control('test'))"
-        at=AppTest.from_string(code).run()
+        from eligibility import classification_allowed, LIMITATION, ACKNOWLEDGEMENT
+        self.assertFalse(classification_allowed('Not sure', True))
+        self.assertFalse(classification_allowed('No lesion / normal skin', True))
+        self.assertFalse(classification_allowed('Yes', False))
+        self.assertFalse(classification_allowed('Yes', 1))
+        self.assertTrue(classification_allowed('Yes', True))
+        code = (
+            "import streamlit as st\\n"
+            "from eligibility import acknowledgement_control\\n"
+            "st.write(acknowledgement_control('image_one'))"
+        )
+        at = AppTest.from_string(code).run()
         self.assertFalse(at.exception)
-        self.assertEqual(at.radio[0].value,'Not assessed / unsure')
-        at.radio[0].set_value('Clinically suspected BCC, Melanoma or SCC').run()
-        self.assertIn('True',at.markdown[-1].value)
-        at.radio[0].set_value('Normal skin / no lesion').run()
-        self.assertIn('False',at.markdown[-1].value)
-        sw=AppTest.from_string("import streamlit as st\nst.session_state['app_language']='sw'\n"+code).run()
-        self.assertEqual(sw.radio[0].label,'Tathmini ya matumizi ya modeli')
+        self.assertEqual(at.checkbox[0].value, False)
+        self.assertEqual(at.checkbox[0].label, ACKNOWLEDGEMENT)
+        self.assertTrue(any(LIMITATION in item.message for item in at.info))
+        at.checkbox[0].check().run()
+        self.assertEqual(at.checkbox[0].value, True)
+        self.assertIn('True', at.markdown[-1].value)
+
+        # A different upload gets a different, initially unchecked key.
+        second = AppTest.from_string(code.replace('image_one', 'image_two')).run()
+        self.assertEqual(second.checkbox[0].value, False)
+        sw = AppTest.from_string(
+            "import streamlit as st\\nst.session_state['app_language']='sw'\\n" + code
+        ).run()
+        self.assertFalse(sw.exception)
+        self.assertEqual(
+            sw.checkbox[0].label,
+            'Ninaelewa kikomo hiki cha makundi matatu na kwamba matokeo si utambuzi wa ugonjwa.'
+        )
 
     def test_tensorflow_serialized_model_and_historical_parity(self):
         import tensorflow as tf
@@ -102,7 +123,7 @@ class Explanations(unittest.TestCase):
             (folder/'metadata.json').write_text(json.dumps(meta))
             output=io.BytesIO();Image.new('RGB',(20,24),(100,60,20)).save(output,format='PNG');raw=output.getvalue()
             with patch.dict(os.environ,{'SKIN_MODEL_DIR':tmp}):
-                result=inference.predict_image(raw,lesion_confirmed=True,scope_confirmed=True)
+                result=inference.predict_image(raw,lesion_confirmed=True,limitation_acknowledged=True)
                 p={**fixture(),'scores':result['scores'],'confidence':result['scores']['BCC'],
                    'model_name':'ResNet50 / synthetic_test_only / '+checksum,'image_sha256':hashlib.sha256(raw).hexdigest()}
                 explanation=xai.explain_saved_image(raw,p,p['image_sha256'])
