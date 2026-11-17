@@ -72,7 +72,7 @@ class Explanations(unittest.TestCase):
 
     def test_word_has_project_identity_and_readable_sections(self):
         doc=Document(io.BytesIO(checklist_docx(fixture())))
-        self.assertIn(PROJECT_NAME,'\n'.join(p.text for p in doc.paragraphs))
+        self.assertIn('DermaLens','\n'.join(p.text for p in doc.paragraphs))
         self.assertIn('Review ID: 6',doc.sections[0].footer.paragraphs[0].text)
         self.assertEqual(len(doc.tables[0].rows),4)
 
