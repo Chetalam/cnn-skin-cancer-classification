@@ -1,11 +1,16 @@
 import streamlit as st
 from translations import t
-from explainability import explain_saved_image, validate_explanation, LIMITATION
+from explainability import (
+    explain_saved_image, validate_explanation, LIMITATION,
+    COLOUR_GUIDE_TITLE, COLOUR_GUIDE_INTRO, COLOUR_GUIDE_RED,
+    COLOUR_GUIDE_BLUE, COLOUR_GUIDE_STRENGTH,
+    COLOUR_GUIDE_EXAMPLE, COLOUR_GUIDE_CAUTION,
+)
 
 
 def show_explanation(prediction, raw=None, *, key):
     st.subheader(t('Visual explanation'))
-    st.write(t('The system covers 49 small image regions in turn and measures the change in the saved predicted-class score. This helps you inspect which regions influence this particular output.'))
+    st.write(t(COLOUR_GUIDE_INTRO))
     st.caption(t('Optional: this requires extra model runs and may take a few minutes on CPU.'))
     if raw is None:
         upload = st.file_uploader(t('Upload the original image to explain this saved review'), type=['jpg','jpeg','png'], key=key+'_explanation_original')
@@ -30,7 +35,12 @@ def show_explanation(prediction, raw=None, *, key):
     left, right = st.columns(2)
     left.image(result['original'], caption=t('Original model input'), use_container_width=True)
     right.image(result['overlay'], caption=t('Regions affecting the predicted-class score'), use_container_width=True)
-    st.caption(t('Red: covering the region lowered the score. Blue: covering it raised the score. Stronger colour means a larger change within this image.'))
+    st.markdown('**' + t(COLOUR_GUIDE_TITLE) + '**')
+    st.write(t(COLOUR_GUIDE_RED))
+    st.write(t(COLOUR_GUIDE_BLUE))
+    st.caption(t(COLOUR_GUIDE_STRENGTH))
+    st.caption(t(COLOUR_GUIDE_EXAMPLE))
+    st.warning(t(COLOUR_GUIDE_CAUTION))
     a, b = st.columns(2)
     a.metric(t('Largest score decrease'), f"{max(0, result['regions'][0]['drop_pp']):.2f} pp")
     b.metric(t('Largest score increase'), f"{max(0, -result['regions'][-1]['drop_pp']):.2f} pp")
