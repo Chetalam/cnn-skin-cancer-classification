@@ -85,8 +85,8 @@ class Explanations(unittest.TestCase):
         self.assertFalse(classification_allowed('Yes', 1))
         self.assertTrue(classification_allowed('Yes', True))
         code = (
-            "import streamlit as st\\n"
-            "from eligibility import acknowledgement_control\\n"
+            "import streamlit as st\n"
+            "from eligibility import acknowledgement_control\n"
             "st.write(acknowledgement_control('image_one'))"
         )
         at = AppTest.from_string(code).run()
@@ -102,7 +102,7 @@ class Explanations(unittest.TestCase):
         second = AppTest.from_string(code.replace('image_one', 'image_two')).run()
         self.assertEqual(second.checkbox[0].value, False)
         sw = AppTest.from_string(
-            "import streamlit as st\\nst.session_state['app_language']='sw'\\n" + code
+            "import streamlit as st\nst.session_state['app_language']='sw'\n" + code
         ).run()
         self.assertFalse(sw.exception)
         self.assertEqual(
