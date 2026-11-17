@@ -16,7 +16,7 @@ if __name__ == '__main__':
     if digest != manifest['image_sha256'] or checksum != manifest['model_sha256']:
         raise ValueError('Reference or model checksum mismatch.')
     # The packaged validation reference is a known in-scope fixture.
-    result = predict_image(raw, lesion_confirmed=True, scope_confirmed=True)
+    result = predict_image(raw, lesion_confirmed=True, limitation_acknowledged=True)
     reference = np.load(folder / 'reference_scores.npy', allow_pickle=False).reshape(-1)
     np.testing.assert_allclose([result['scores'][k] for k in CLASS_NAMES], reference, rtol=.001, atol=.0001)
     label = max(CLASS_NAMES, key=result['scores'].get)
