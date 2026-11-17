@@ -4,6 +4,7 @@ import io
 import streamlit as st
 import db
 from referral import show_referral_guidance
+from explanation_view import show_explanation
 from ui import setup, disclaimer, timestamp, flash
 from review_actions import review_view, archive_controls
 user = setup('Reviews')
@@ -58,4 +59,5 @@ if row['status'] == 'predicted':
     st.caption(t('Model version') + ': ' + detail['model_name'])
     st.bar_chart({t('Model score'): detail['scores']})
     st.caption(t('Model scores are uncalibrated and do not represent diagnostic accuracy.'))
-    show_referral_guidance('history_referral_checklist', detail)
+    explanation = show_explanation(detail, key='history')
+    show_referral_guidance('history_referral_checklist', detail, explanation=explanation)

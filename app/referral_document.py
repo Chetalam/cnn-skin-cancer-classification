@@ -7,13 +7,17 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from translations import t
+from branding import PROJECT_NAME, SHORT_NAME
+from explainability import validate_explanation, LIMITATION
 from classification_info import CLASS_INFO, ABOUT, WHY, GENERAL_ONLY, LIMIT, CLOSED_SET, SOURCES, interpretation
 
 
-def checklist_docx(prediction):
+def checklist_docx(prediction, explanation=None):
     # Shared validation keeps text and Word exports bound to the same saved result.
     from referral import checklist_text, NOTICE, SCC_LIMITATION, STEPS, HANDOVER, FIELDS
     checklist_text(prediction)
+    if explanation is not None:
+        validate_explanation(explanation, prediction)
     clean = lambda value: ' '.join(str(value).split())
     doc = Document()
     for border in list(doc.styles.element.iter(qn("w:pBdr"))):
@@ -34,7 +38,16 @@ def checklist_docx(prediction):
     doc.styles['Heading 1'].paragraph_format.space_before = Pt(12)
     doc.styles['Heading 1'].paragraph_format.space_after = Pt(7)
     doc.add_paragraph(t('Clinical assessment and referral checklist'), 'Title')
+    doc.add_paragraph(PROJECT_NAME)
     doc.add_paragraph(t('Decision support only'))
+    footer = sec.footer.paragraphs[0]
+    footer.add_run(SHORT_NAME + '  |  ' + t('Review ID') + ': ' + str(prediction['image_id']) + '  |  ')
+    field = OxmlElement('w:fldSimple')
+    field.set(qn('w:instr'), 'PAGE')
+    footer._p.append(field)
+    for run in footer.runs:
+        run.font.size = Pt(9)
+        run.font.color.rgb = RGBColor.from_string('506879')
     doc.add_heading(t('Prediction summary'), 1)
     saved = datetime.fromtimestamp(prediction['created_at'], timezone.utc).strftime('%d %b %Y, %H:%M UTC')
     for label, value in [('Review ID', prediction['image_id']), ('Case reference', clean(prediction.get('case_reference') or '—')),
@@ -51,11 +64,24 @@ def checklist_docx(prediction):
     p.paragraph_format.space_after = Pt(8)
     doc.add_heading(t('All class scores'), 1)
     table = doc.add_table(rows=1, cols=2)
-    table.style = 'Light Shading Accent 1'
+    table.style = 'Table Grid'
+    borders = OxmlElement('w:tblBorders')
+    for edge in ('top','left','bottom','right','insideH','insideV'):
+        border = OxmlElement('w:' + edge)
+        for key, value in [('val','single'),('sz','4'),('color','D9D9D9')]:
+            border.set(qn('w:' + key), value)
+        borders.append(border)
+    table._tbl.tblPr.append(borders)
     table.cell(0, 0).text, table.cell(0, 1).text = t('Class'), t('Score')
     for label in ('BCC', 'Melanoma', 'SCC'):
         cells = table.add_row().cells
         cells[0].text, cells[1].text = label, f"{prediction['scores'][label]:.1%}"
+    for cell in table.rows[0].cells:
+        shade = OxmlElement('w:shd')
+        shade.set(qn('w:fill'), 'DDEFF1')
+        cell._tc.get_or_add_tcPr().append(shade)
+        for run in cell.paragraphs[0].runs:
+            run.bold = True
     for row in table.rows:
         trpr = row._tr.get_or_add_trPr()
         trpr.append(OxmlElement('w:cantSplit'))
@@ -68,11 +94,11 @@ def checklist_docx(prediction):
     doc.add_paragraph(t(name) + '. ' + t(description))
     doc.add_paragraph(t(signs))
     doc.add_paragraph(t(GENERAL_ONLY))
+    doc.add_page_break()
     doc.add_heading(t(WHY), 1)
     doc.add_paragraph(interpretation(prediction))
     doc.add_paragraph(t(LIMIT))
     doc.add_paragraph(t(CLOSED_SET))
-    doc.add_page_break()
     doc.add_heading(t('Referral and follow up'), 1)
     doc.add_paragraph(t(NOTICE))
     doc.add_paragraph(t(SCC_LIMITATION))
@@ -81,6 +107,7 @@ def checklist_docx(prediction):
         p.add_run(str(n) + '. ').bold = True
         p.add_run(t(step))
         p.paragraph_format.space_after = Pt(12)
+    doc.add_page_break()
     doc.add_heading(t(HANDOVER), 1)
     for field in FIELDS:
         p = doc.add_paragraph()
@@ -93,9 +120,22 @@ def checklist_docx(prediction):
         p.paragraph_format.space_after = Pt(5)
         for run in p.runs:
             run.font.size = Pt(9)
-    doc.core_properties.author = ''
+    if explanation is not None:
+        doc.add_page_break()
+        doc.add_heading(t('Visual explanation'), 1)
+        doc.add_paragraph(t('Regions affecting the predicted-class score') + ': ' + prediction['cancer_class'])
+        doc.add_paragraph(t('The system covers 49 small image regions in turn and measures the change in the saved predicted-class score. This helps you inspect which regions influence this particular output.'))
+        doc.add_picture(BytesIO(explanation['overlay']), width=Inches(3.8))
+        doc.add_paragraph(t('Red: covering the region lowered the score. Blue: covering it raised the score. Stronger colour means a larger change within this image.'))
+        doc.add_paragraph(t('Largest score decrease') + ': ' + f"{max(0, explanation['regions'][0]['drop_pp']):.2f} pp")
+        doc.add_paragraph(t('Largest score increase') + ': ' + f"{max(0, -explanation['regions'][-1]['drop_pp']):.2f} pp")
+        doc.add_paragraph(t('pp means percentage points, not a change in cancer risk.'))
+        doc.add_paragraph(t(LIMITATION))
+        doc.add_paragraph(explanation['method'])
+        doc.add_paragraph('https://captum.ai/api/occlusion.html')
+    doc.core_properties.author = PROJECT_NAME
     doc.core_properties.title = 'Clinical assessment and referral checklist'
-    doc.core_properties.subject = 'Saved model output and clinical handover'
+    doc.core_properties.subject = PROJECT_NAME
     output = BytesIO()
     doc.save(output)
     return output.getvalue()

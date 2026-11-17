@@ -1,3 +1,5 @@
+from html import escape
+from branding import PROJECT_NAME, DESCRIPTION
 from translations import t, display_data, translated_format, language_selector
 import streamlit as st
 import db
@@ -12,9 +14,8 @@ def open_account_page(user):
 user = setup('Welcome', protected=False)
 if user:
     open_account_page(user)
-st.title(t('Welcome'))
-st.write(t('A workspace for skin lesion image review and CNN classification research.'))
-st.info(t('Register or sign in to access your dashboard. Predictions use an experimental checkpoint when installed. Performance requirements remain unmet.'))
+st.markdown('<section class="project-hero"><div class="project-eyebrow">' + escape(t('Welcome')) + '</div><h1>' + escape(PROJECT_NAME) + '</h1><p>' + escape(t(DESCRIPTION)) + '</p></section>', unsafe_allow_html=True)
+st.caption(t('Research decision support for healthcare workers. Clinical judgement remains essential.'))
 flash()
 left, right = st.columns([1.15, 1], gap='large')
 with left:
@@ -74,6 +75,11 @@ with left:
                 st.error(t(str(exc)))
         st.caption(t('Healthcare centre names are self-declared.'))
 with right:
-    st.subheader(t('Your research workspace'))
-    st.markdown(t('\n        **Dashboard** — account role, healthcare centre and activity\n\n        **Analyse Image** — upload, preview and save a review\n\n        **Reviews** — saved predictions, referral checklists, editing and archive/restore\n\n        **Account** — profile and password settings\n\n        **User Management** — administrator account controls\n\n        **Help** — instructions for using the app\n        '))
-    st.warning(t('No clinical diagnosis is provided at this milestone.'))
+    for heading, description in [
+        ('Review images', 'Upload a lesion image and save an experimental classification.'),
+        ('Understand the output', 'Compare all three scores and inspect a visual explanation.'),
+        ('Prepare referrals', 'Download a clear Word checklist with the saved prediction and model version.'),
+        ('Keep track', 'Review saved records, restore archived reviews and view activity analytics.'),
+    ]:
+        st.markdown('<div class="feature-card"><h3>' + escape(t(heading)) + '</h3><p>' + escape(t(description)) + '</p></div>', unsafe_allow_html=True)
+    st.warning(t('Research use only. SCC detection remains limited and darker-skin reliability is not established. This system cannot confirm or rule out cancer.'))
