@@ -1,6 +1,6 @@
 # Interface and explanation update
 
-The system title is **A CNN Transfer Learning System for Multi-Class Skin Cancer Classification to Support Healthcare Workers in Low-Resource Settings**. The login page and downloadable Word reports use this title. The sidebar uses the shorter label Skin Lesion Review.
+The application brand is **DermaLens**, used in the sidebar and Word footer. The full academic project title remains **A CNN Transfer Learning System for Multi-Class Skin Cancer Classification to Support Healthcare Workers in Low-Resource Settings**, unchanged in the existing login banner and Word report body.
 
 ## Interface and reports
 
@@ -10,7 +10,7 @@ Authenticated pages use navy (#103F53), teal (#087F79), coral (#F07868), warm am
 
 The optional **Generate visual explanation** action uses occlusion sensitivity. It covers each of 49 non-overlapping image regions with the image's mean RGB colour, runs the same model and records the change in the saved predicted-class score. Red indicates that covering a region reduced that score; blue indicates an increase. Intensity is relative to the largest absolute change in that image. Changes are given in percentage points. Changes below 0.01 percentage points are shown without coloured emphasis.
 
-This is an explanation of model behaviour, not a clinical explanation or lesion segmentation. It cannot verify borders, texture, cancer, normal skin or skin-tone reliability. The masking colour, background, image lighting and grid size affect the result. No clinical validation of these maps is claimed.
+Both the signed-in explanation screen and the optional Word explanation page now include a plain-language guide to the red and blue overlays: red regions made the saved predicted-class score decrease when covered, blue regions made it increase, stronger colours represent larger relative changes, and uncoloured regions had little measured effect. A clearly labelled 75% to 55% example illustrates a **20 percentage-point model-score drop**, not a change in cancer risk. The guide explicitly warns that **red does not mean cancer** and **blue does not mean healthy or safe**. The guide is available in English and Kiswahili. Reports without a generated visual explanation do not include a coloured-map explanation page.\n\nThis is an explanation of model behaviour, not a clinical explanation or lesion segmentation. It cannot verify borders, texture, cancer, normal skin or skin-tone reliability. The masking colour, background, image lighting and grid size affect the result. No clinical validation of these maps is claimed.
 
 The original bytes, original preprocessing, active model checksum and saved scores must match the review before an explanation is generated. Old reviews require the original upload again; a stored thumbnail is never used for inference. Replacing the active checkpoint does not overwrite an old review or explain it with a different model. Explanations are kept only in the signed-in session unless included in a downloaded report; they are not written to the application database.
 
