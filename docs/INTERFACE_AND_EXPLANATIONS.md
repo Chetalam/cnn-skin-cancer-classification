@@ -1,6 +1,6 @@
 # Interface and explanation update
 
-The application brand is **DermaLens**, used in the sidebar and Word footer. The welcome banner greets users with **Welcome to DermaLens**. The full academic project title remains **A CNN Transfer Learning System for Multi-Class Skin Cancer Classification to Support Healthcare Workers in Low-Resource Settings** in the Word report body.
+The application brand is **DermaLens**, used in the sidebar and Word footer. The welcome banner greets users with **Welcome to DermaLens**. Referral documents display **DermaLens** beneath the checklist title. The full academic project title is retained in the document properties.
 
 ## Interface and reports
 
