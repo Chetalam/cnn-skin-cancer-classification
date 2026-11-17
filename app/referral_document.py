@@ -8,7 +8,12 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from translations import t
 from branding import PROJECT_NAME, SHORT_NAME
-from explainability import validate_explanation, LIMITATION
+from explainability import (
+    validate_explanation, LIMITATION,
+    COLOUR_GUIDE_TITLE, COLOUR_GUIDE_INTRO, COLOUR_GUIDE_RED,
+    COLOUR_GUIDE_BLUE, COLOUR_GUIDE_STRENGTH,
+    COLOUR_GUIDE_EXAMPLE, COLOUR_GUIDE_CAUTION,
+)
 from classification_info import CLASS_INFO, ABOUT, WHY, GENERAL_ONLY, LIMIT, CLOSED_SET, SOURCES, interpretation
 
 
@@ -124,9 +129,15 @@ def checklist_docx(prediction, explanation=None):
         doc.add_page_break()
         doc.add_heading(t('Visual explanation'), 1)
         doc.add_paragraph(t('Regions affecting the predicted-class score') + ': ' + prediction['cancer_class'])
-        doc.add_paragraph(t('The system covers 49 small image regions in turn and measures the change in the saved predicted-class score. This helps you inspect which regions influence this particular output.'))
+        doc.add_paragraph(t(COLOUR_GUIDE_INTRO))
         doc.add_picture(BytesIO(explanation['overlay']), width=Inches(3.8))
-        doc.add_paragraph(t('Red: covering the region lowered the score. Blue: covering it raised the score. Stronger colour means a larger change within this image.'))
+        doc.add_heading(t(COLOUR_GUIDE_TITLE), 2)
+        for guide in (COLOUR_GUIDE_RED, COLOUR_GUIDE_BLUE, COLOUR_GUIDE_STRENGTH):
+            paragraph = doc.add_paragraph(t(guide), style='List Bullet')
+            paragraph.paragraph_format.space_after = Pt(5)
+        doc.add_paragraph(t(COLOUR_GUIDE_EXAMPLE))
+        important = doc.add_paragraph()
+        important.add_run(t(COLOUR_GUIDE_CAUTION)).bold = True
         doc.add_paragraph(t('Largest score decrease') + ': ' + f"{max(0, explanation['regions'][0]['drop_pp']):.2f} pp")
         doc.add_paragraph(t('Largest score increase') + ': ' + f"{max(0, -explanation['regions'][-1]['drop_pp']):.2f} pp")
         doc.add_paragraph(t('pp means percentage points, not a change in cancer risk.'))
