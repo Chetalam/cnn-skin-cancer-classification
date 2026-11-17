@@ -224,14 +224,7 @@ CATALOG = {'Dashboard': 'Dashibodi',
  'View saved history': 'Angalia historia iliyohifadhiwa',
  'Predictions remain unavailable until model integration.': 'Matokeo ya modeli hayatapatikana hadi '
                                                             'modeli iunganishwe.',
- 'Readability validation cannot confirm that the image depicts a skin lesion.': 'Ukaguzi wa '
-                                                                                'kusomeka kwa '
-                                                                                'picha hauwezi '
-                                                                                'kuthibitisha kuwa '
-                                                                                'picha inaonyesha '
-                                                                                'badiliko la '
-                                                                                'ngozi.',
- 'Your review history': 'Historia ya mapitio yako',
+  'Your review history': 'Historia ya mapitio yako',
  'No saved reviews yet.': 'Bado hakuna mapitio yaliyohifadhiwa.',
  'Upload your first image': 'Pakia picha yako ya kwanza',
  'Record': 'Rekodi',
