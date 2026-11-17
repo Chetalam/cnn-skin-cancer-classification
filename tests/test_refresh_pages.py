@@ -8,7 +8,6 @@ from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'app'))
 from streamlit.testing.v1 import AppTest
 import db
-from branding import PROJECT_NAME
 ROOT=Path(__file__).resolve().parents[1]
 
 class RefreshPages(unittest.TestCase):
@@ -36,7 +35,7 @@ class RefreshPages(unittest.TestCase):
     def test_login_and_language_persist_across_pages(self):
         at=AppTest.from_file(str(ROOT/'app/streamlit_app.py')).run()
         self.assertFalse(at.exception)
-        self.assertTrue(any(PROJECT_NAME in m.value for m in at.markdown))
+        self.assertTrue(any('Welcome to DermaLens' in m.value for m in at.markdown))
         at.session_state['app_language']='sw'
         at.run()
         self.assertFalse(at.exception)
