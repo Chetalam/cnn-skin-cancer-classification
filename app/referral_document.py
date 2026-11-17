@@ -43,7 +43,7 @@ def checklist_docx(prediction, explanation=None):
     doc.styles['Heading 1'].paragraph_format.space_before = Pt(12)
     doc.styles['Heading 1'].paragraph_format.space_after = Pt(7)
     doc.add_paragraph(t('Clinical assessment and referral checklist'), 'Title')
-    doc.add_paragraph(PROJECT_NAME)
+    doc.add_paragraph(SHORT_NAME)
     doc.add_paragraph(t('Decision support only'))
     footer = sec.footer.paragraphs[0]
     footer.add_run(SHORT_NAME + '  |  ' + t('Review ID') + ': ' + str(prediction['image_id']) + '  |  ')
