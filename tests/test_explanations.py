@@ -93,7 +93,7 @@ class Explanations(unittest.TestCase):
         self.assertFalse(at.exception)
         self.assertEqual(at.checkbox[0].value, False)
         self.assertEqual(at.checkbox[0].label, ACKNOWLEDGEMENT)
-        self.assertTrue(any(LIMITATION in item.message for item in at.info))
+        self.assertTrue(any(LIMITATION in item.value for item in at.info))
         at.checkbox[0].check().run()
         self.assertEqual(at.checkbox[0].value, True)
         self.assertIn('True', at.markdown[-1].value)
