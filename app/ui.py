@@ -360,7 +360,7 @@ def setup(title, protected=True):
 
             if st.button(
                 t("Log out"),
-                use_container_width=True,
+                width='stretch',
                 key="sidebar_logout",
             ):
                 db.sign_out(token)
