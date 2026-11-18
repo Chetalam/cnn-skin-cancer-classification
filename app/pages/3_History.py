@@ -19,7 +19,7 @@ if not rows:
     st.page_link('pages/2_Analyse_Image.py', label=t('Upload your first image'))
     st.stop()
 display_rows = [{'Record': r['id'], 'Case reference': r['case_reference'] or '—', 'File': r['file_name'], 'Status': 'Awaiting model' if r['status'] == 'awaiting_model' else 'Predicted', 'Class': r['cancer_class'] or 'Unavailable', 'Model score': f"{r['confidence']:.1%}" if r['confidence'] is not None else 'Unavailable', 'Saved': timestamp(r['uploaded_at']), 'Archive state': t('Archived' if r['archived_at'] is not None else 'Active')} for r in rows]
-st.dataframe(display_data(display_rows), hide_index=True, use_container_width=True)
+st.dataframe(display_data(display_rows), hide_index=True, width='stretch')
 
 def safe_cell(value):
     text = str(value)
