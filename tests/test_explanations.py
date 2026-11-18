@@ -13,7 +13,7 @@ from docx import Document
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'app'))
 import inference
 import explainability as xai
-from branding import PROJECT_NAME
+from branding import SHORT_NAME
 from referral_document import checklist_docx
 
 
@@ -102,7 +102,7 @@ class Explanations(unittest.TestCase):
         text = '\\n'.join(p.text for p in doc.paragraphs)
         for expected in (COLOUR_GUIDE_RED, COLOUR_GUIDE_BLUE,
                          COLOUR_GUIDE_EXAMPLE, COLOUR_GUIDE_CAUTION,
-                         PROJECT_NAME):
+                         SHORT_NAME):
             self.assertIn(expected, text)
         self.assertEqual(len(doc.inline_shapes), 1)
         self.assertIn('DermaLens', doc.sections[0].footer.paragraphs[0].text)
