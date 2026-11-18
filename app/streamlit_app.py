@@ -24,7 +24,7 @@ with left:
         with st.form('login', clear_on_submit=True):
             email = st.text_input(t('Email address'), key='login_email', max_chars=254)
             password = st.text_input(t('Password'), type='password', key='login_password', max_chars=128)
-            submitted = st.form_submit_button(t('Sign in'), type='primary', use_container_width=True)
+            submitted = st.form_submit_button(t('Sign in'), type='primary', width='stretch')
         if submitted:
             try:
                 token = db.sign_in(email, password)
@@ -60,7 +60,7 @@ with left:
                 linked_email = st.text_input(t('Existing account email address'), max_chars=254, key='linked_email_system_administrator')
                 linked_password = st.text_input(t('Existing account password'), type='password', max_chars=128, key='linked_password_system_administrator')
             agree = st.checkbox(t('I understand this is a research prototype and will use de-identified images.'), key=f'agree_{requested_role}')
-            registered = st.form_submit_button(t('Create account'), type='primary', use_container_width=True)
+            registered = st.form_submit_button(t('Create account'), type='primary', width='stretch')
         if registered:
             try:
                 if not agree:
