@@ -33,8 +33,8 @@ def show_explanation(prediction, raw=None, *, key):
     result = cached[1]
     validate_explanation(result, prediction)
     left, right = st.columns(2)
-    left.image(result['original'], caption=t('Original model input'), use_container_width=True)
-    right.image(result['overlay'], caption=t('Regions affecting the predicted-class score'), use_container_width=True)
+    left.image(result['original'], caption=t('Original model input'), width='stretch')
+    right.image(result['overlay'], caption=t('Regions affecting the predicted-class score'), width='stretch')
     st.markdown('**' + t(COLOUR_GUIDE_TITLE) + '**')
     st.write(t(COLOUR_GUIDE_RED))
     st.write(t(COLOUR_GUIDE_BLUE))
