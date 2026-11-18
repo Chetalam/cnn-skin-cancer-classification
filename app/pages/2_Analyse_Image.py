@@ -33,7 +33,7 @@ with left:
                 st.session_state['upload_digest'] = digest
                 st.session_state['review_key'] = secrets.token_urlsafe(24)
                 st.session_state.pop('saved_review', None)
-            st.image(image, use_container_width=True)
+            st.image(image, width='stretch')
             st.caption(t('Preview orientation may follow EXIF metadata. Inference uses the original orientation to match training.'))
         except ValueError as exc:
             st.error(t(str(exc)))
