@@ -104,8 +104,12 @@ def initialize():
     with connect() as conn:
         if not conn.execute('SELECT 1 FROM schema_version WHERE version=6').fetchone():
             backup_path = DB_PATH.with_name(DB_PATH.stem + f'.before_profile_update_{time.time_ns()}.db')
-            with sqlite3.connect(backup_path) as backup:
+            backup = sqlite3.connect(backup_path)
+            try:
                 conn.backup(backup)
+                backup.commit()
+            finally:
+                backup.close()
             conn.execute('PRAGMA foreign_keys=OFF')
             try:
                 conn.execute('BEGIN IMMEDIATE')
@@ -153,8 +157,12 @@ def initialize():
             backup_folder = DB_PATH.parent / 'backups'
             backup_folder.mkdir(parents=True, exist_ok=True)
             backup_path = backup_folder / (DB_PATH.stem + f'.before_review_archiving_{time.time_ns()}.db')
-            with sqlite3.connect(backup_path) as backup:
+            backup = sqlite3.connect(backup_path)
+            try:
                 conn.backup(backup)
+                backup.commit()
+            finally:
+                backup.close()
         conn.execute('BEGIN IMMEDIATE')
         columns = {r['name'] for r in conn.execute('PRAGMA table_info(skin_lesion_images)')}
         if 'archived_at' not in columns:
