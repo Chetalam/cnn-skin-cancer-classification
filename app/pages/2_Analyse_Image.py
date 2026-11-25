@@ -6,7 +6,7 @@ from images import validate_image
 from inference import inspect_package, predict_image
 from translations import t
 from ui import setup, disclaimer
-from eligibility import acknowledgement_control, classification_allowed
+from eligibility import lesion_checks, classification_allowed
 from explanation_view import show_explanation
 
 user = setup('Analyse Image')
@@ -41,25 +41,9 @@ with left:
         for key in ['upload_digest', 'review_key', 'saved_review']:
             st.session_state.pop(key, None)
 with right:
-    visibility = None
-    limitation_acknowledged = False
-    if image is not None:
-        # Bind this answer to the image digest so it cannot carry over to another upload.
-        visibility = st.radio(
-            t('Can you clearly identify a skin lesion in this image?'),
-            options=['Not sure', 'No lesion / normal skin', 'Yes'],
-            format_func=t,
-            key='lesion_visibility_' + digest,
-        )
-        st.caption(t('This is your visual assessment. The current model cannot automatically detect normal skin, benign lesions, or unrelated images.'))
-        if visibility == 'No lesion / normal skin':
-            st.warning(t('You indicated that no lesion is visible. Classification is blocked. Upload a clear lesion image to analyse.'))
-        elif visibility == 'Not sure':
-            st.info(t('Lesion visibility is uncertain. Classification is blocked; obtain a clearer image or qualified review.'))
-        elif visibility == 'Yes':
-            limitation_acknowledged = acknowledgement_control(digest)
-    visibility_confirmed = image is not None and visibility == 'Yes'
-    classification_ready = image is not None and classification_allowed(visibility, limitation_acknowledged)
+    visibility, limitation_acknowledged = lesion_checks(digest) if image is not None else (None, False)
+    visibility_confirmed = visibility == 'Yes'
+    classification_ready = classification_allowed(visibility, limitation_acknowledged)
     reference = st.text_input(t('Optional case reference'), max_chars=80)
     consent = st.checkbox(t('Save a small preview and file metadata in Reviews.'))
     st.caption(t('The original image is not stored. A preview up to 320 × 320 pixels is retained when saved.'))
@@ -95,5 +79,5 @@ if image is not None and st.session_state.get('saved_review'):
     elif result['status'] == 'predicted':
         st.info(t('A historical prediction is saved in Reviews. It does not establish that a lesion is present.'))
     else:
-        st.info(t('Saved without a prediction. Upload the original image again to analyse it.'))
+        st.info(t('Saved without a prediction. To finish this review later, open Reviews, choose Awaiting prediction and upload the original file.'))
     st.page_link('pages/3_History.py', label=t('View Reviews'))

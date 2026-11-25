@@ -1,5 +1,7 @@
 """One Reviews screen preserves editing, prediction provenance and retained data."""
 import importlib.util
+import io
+from unittest.mock import patch
 from pathlib import Path
 import sys
 import tempfile
@@ -64,6 +66,49 @@ class UnifiedReviews(unittest.TestCase):
             self.assertEqual(conn.execute('SELECT COUNT(*) FROM prediction_results').fetchone()[0],1)
             self.assertEqual(conn.execute('SELECT COUNT(*) FROM prediction_scores').fetchone()[0],3)
         self.assertEqual([e.message for e in app.exception],[])
+
+    def test_resume_pending_review_uses_original_and_keeps_record(self):
+        from images import validate_image
+
+        original = io.BytesIO()
+        Image.new('RGB', (24, 24), 'red').save(original, format='PNG')
+        raw = original.getvalue()
+        image, digest = validate_image(raw)
+        review_id = self.db.save_review(self.worker, 'pending', 'Case 2', 'original.png', image, digest)
+        result = dict(scores={'BCC': .6, 'Melanoma': .3, 'SCC': .1}, model_name='Fixture CNN',
+                      run_id='resume', model_sha256='b' * 64, artifact_path='fixture.keras', preprocessing='fixture')
+        with patch('streamlit.file_uploader') as upload, patch('inference.predict_image') as predict:
+            upload.return_value = None
+            app = self.page('3_History.py')
+            app.radio(key='review_status_view').set_value('Awaiting prediction').run()
+            self.assertEqual(app.selectbox(key='history_selection_active_Awaiting prediction').options,
+                             [f'Review #{review_id}'])
+            other = io.BytesIO()
+            Image.new('RGB', (24, 24), 'blue').save(other, format='PNG')
+            upload.return_value = other
+            app.run()
+            self.assertIn('Prediction image does not match your saved review.', [e.value for e in app.error])
+            predict.assert_not_called()
+            upload.return_value = original
+            app.run()
+            run_key = f'resume_predict_{review_id}'
+            self.assertTrue(app.button(key=run_key).disabled)
+            app.radio(key=f'lesion_visibility_resume_{review_id}_{digest}').set_value('Yes').run()
+            self.assertTrue(app.button(key=run_key).disabled)
+            app.checkbox(key=f'lesion_limitation_ack_resume_{review_id}_{digest}').check().run()
+            predict.side_effect = ValueError('Model unavailable')
+            app.button(key=run_key).click().run()
+            self.assertEqual(self.db.prediction_detail(self.worker, review_id)['status'], 'awaiting_model')
+            predict.side_effect = None
+            predict.return_value = result
+            app.button(key=run_key).click().run()
+            self.assertEqual([e.message for e in app.exception], [])
+            predict.assert_called_with(raw, lesion_confirmed=True, limitation_acknowledged=True)
+            self.assertEqual(app.radio(key='review_status_view').value, 'Completed predictions')
+            self.assertEqual(app.selectbox(key='history_selection_active_Completed predictions').value, review_id)
+            detail = self.db.prediction_detail(self.worker, review_id)
+            self.assertEqual((detail['status'], detail['case_reference']), ('predicted', 'Case 2'))
+            self.assertEqual(len(self.db.history(self.worker)), 2)
 
     def test_dashboard_has_actions_without_recent_review_table(self):
         app=self.page('1_Dashboard.py')

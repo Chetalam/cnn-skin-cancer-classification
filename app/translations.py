@@ -1631,3 +1631,19 @@ CATALOG.update({
     'Example: A Melanoma model score of 75% falls to 55% when one area is hidden. That is a drop of 20 percentage points in the MODEL SCORE, not a 20% change in a person\'s risk of cancer.': 'Mfano: Alama ya modeli ya Melanoma ya 75% inashuka hadi 55% wakati sehemu moja imefichwa. Huo ni upungufu wa pointi 20 za asilimia kwenye ALAMA YA MODELI, si mabadiliko ya 20% katika hatari ya mtu kupata saratani.',
     'IMPORTANT: Red does NOT mean cancer. Blue does NOT mean healthy or safe. The colours do not show where cancer is located, confirm a diagnosis, or replace a healthcare worker\'s assessment.': 'MUHIMU: Nyekundu HAIMAANISHI saratani. Bluu HAIMAANISHI ngozi yenye afya au salama. Rangi hizi hazionyeshi eneo halisi la saratani, hazithibitishi utambuzi wa ugonjwa, wala hazichukui nafasi ya tathmini ya mhudumu wa afya.',
 })
+
+CATALOG.update({
+    'All results': 'Matokeo yote',
+    'Awaiting prediction': 'Inasubiri utabiri',
+    'Completed predictions': 'Utabiri uliokamilika',
+    'Prediction status': 'Hali ya utabiri',
+    'Complete this review': 'Kamilisha pitio hili',
+    'Original image': 'Picha asili',
+    'Run prediction': 'Fanya utabiri',
+    'Prediction saved to this review.': 'Utabiri umehifadhiwa kwenye pitio hili.',
+    'Your reviews awaiting prediction': 'Mapitio yako yanayosubiri utabiri',
+    'Saved without a prediction. To finish this review later, open Reviews, choose Awaiting prediction and upload the original file.': 'Pitio limehifadhiwa bila utabiri. Ili kulikamilisha baadaye, fungua Mapitio, chagua Inasubiri utabiri kisha upakie faili asili.',
+    'Prediction image does not match your saved review.': 'Picha hii si picha asili ya pitio ulilochagua.',
+    'Open Analyse Image to upload and save a de-identified image. Reviews contains your saved records, predictions, referral downloads and CSV export. Model scores are not a diagnosis.': 'Fungua Changanua Picha ili kupakia na kuhifadhi picha isiyo na taarifa zinazomtambulisha mgonjwa. Kwenye Mapitio unaweza kuona rekodi na utabiri, kupakua rufaa na kuhamisha rekodi kama CSV. Alama za modeli si utambuzi wa ugonjwa.',
+    'To finish a saved review, choose Awaiting prediction in Reviews, select the review and upload its original image. Confirm the lesion and model limits, then select Run prediction.': 'Ili kukamilisha pitio lililohifadhiwa, chagua Inasubiri utabiri kwenye Mapitio, chagua pitio kisha upakie picha yake asili. Thibitisha kwamba unaona kidonda na unaelewa mipaka ya modeli, kisha chagua Fanya utabiri.',
+})

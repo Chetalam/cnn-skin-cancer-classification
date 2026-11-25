@@ -25,7 +25,7 @@ else:
     col1, col2, col3 = st.columns(3)
     col1.metric(t('Your saved reviews'), len(rows))
     col2.metric(t('Your completed predictions'), sum((row['status'] == 'predicted' for row in rows)))
-    col3.metric(t('Your reviews awaiting model'), sum((row['status'] == 'awaiting_model' for row in rows)))
+    col3.metric(t('Your reviews awaiting prediction'), sum((row['status'] == 'awaiting_model' for row in rows)))
     st.subheader(t('Start a review'))
     st.write(t('Upload a de-identified lesion image, check the preview and save a review.'))
     analyse, reviews = st.columns(2)

@@ -29,3 +29,22 @@ def acknowledgement_control(digest):
     """
     st.info(t(LIMITATION))
     return st.checkbox(t(ACKNOWLEDGEMENT), key='lesion_limitation_ack_' + digest)
+
+
+def lesion_checks(key):
+    limitation_acknowledged = False
+    # Bind this answer to the image digest so it cannot carry over to another upload.
+    visibility = st.radio(
+        t('Can you clearly identify a skin lesion in this image?'),
+        options=['Not sure', 'No lesion / normal skin', 'Yes'],
+        format_func=t,
+        key='lesion_visibility_' + key,
+    )
+    st.caption(t('This is your visual assessment. The current model cannot automatically detect normal skin, benign lesions, or unrelated images.'))
+    if visibility == 'No lesion / normal skin':
+        st.warning(t('You indicated that no lesion is visible. Classification is blocked. Upload a clear lesion image to analyse.'))
+    elif visibility == 'Not sure':
+        st.info(t('Lesion visibility is uncertain. Classification is blocked; obtain a clearer image or qualified review.'))
+    elif visibility == 'Yes':
+        limitation_acknowledged = acknowledgement_control(key)
+    return visibility, limitation_acknowledged

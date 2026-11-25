@@ -9,7 +9,8 @@ with st.expander(t('Deactivation and reactivation')):
     st.write(t('Open Account → Deactivate profile. Enter your current password and confirm. Your profile and reviews remain saved. An active administrator at your centre can reactivate your account. The last active administrator at a centre cannot self-deactivate.'))
 if user['role'] == 'healthcare_worker':
     with st.expander(t('Create and view reviews')):
-        st.write(t('Open Analyse Image to upload and save a de-identified image. Reviews contains your saved records, predictions, referral downloads and CSV export. Save without prediction retains an awaiting-model record. Model scores are not a diagnosis.'))
+        st.write(t('Open Analyse Image to upload and save a de-identified image. Reviews contains your saved records, predictions, referral downloads and CSV export. Model scores are not a diagnosis.'))
+        st.write(t('To finish a saved review, choose Awaiting prediction in Reviews, select the review and upload its original image. Confirm the lesion and model limits, then select Run prediction.'))
     with st.expander(t('Update, archive or restore a review')):
         st.write(t('Open Reviews to edit a case reference, archive a review or restore it. Archiving hides it from the active list and retains its preview and predictions. Choose Archived reviews to restore it.'))
 else:
