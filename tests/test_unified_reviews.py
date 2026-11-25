@@ -67,30 +67,26 @@ class UnifiedReviews(unittest.TestCase):
             self.assertEqual(conn.execute('SELECT COUNT(*) FROM prediction_scores').fetchone()[0],3)
         self.assertEqual([e.message for e in app.exception],[])
 
-    def test_resume_pending_review_uses_original_and_keeps_record(self):
+    def test_old_review_uses_its_stored_preview_without_upload(self):
         from images import validate_image
 
         original = io.BytesIO()
-        Image.new('RGB', (24, 24), 'red').save(original, format='PNG')
+        Image.new('RGB', (960, 1280), 'red').save(original, format='PNG')
         raw = original.getvalue()
         image, digest = validate_image(raw)
         review_id = self.db.save_review(self.worker, 'pending', 'Case 2', 'original.png', image, digest)
         result = dict(scores={'BCC': .6, 'Melanoma': .3, 'SCC': .1}, model_name='Fixture CNN',
                       run_id='resume', model_sha256='b' * 64, artifact_path='fixture.keras', preprocessing='fixture')
-        with patch('streamlit.file_uploader') as upload, patch('inference.predict_image') as predict:
-            upload.return_value = None
+        preview = self.db.get_thumbnail(self.worker, review_id)
+        original_digest = digest
+        _, digest = validate_image(preview)
+        self.assertNotEqual(digest, original_digest)
+        with self.assertRaises(ValueError):
+            self.db.record_prediction(self.worker, review_id, original_digest, result, from_preview=True)
+        with patch('inference.predict_image') as predict:
             app = self.page('3_History.py')
             app.radio(key='review_status_view').set_value('Awaiting prediction').run()
-            self.assertEqual(app.selectbox(key='history_selection_active_Awaiting prediction').options,
-                             [f'Review #{review_id}'])
-            other = io.BytesIO()
-            Image.new('RGB', (24, 24), 'blue').save(other, format='PNG')
-            upload.return_value = other
-            app.run()
-            self.assertIn('Prediction image does not match your saved review.', [e.value for e in app.error])
-            predict.assert_not_called()
-            upload.return_value = original
-            app.run()
+            self.assertFalse(app.get('file_uploader'))
             run_key = f'resume_predict_{review_id}'
             self.assertTrue(app.button(key=run_key).disabled)
             app.radio(key=f'lesion_visibility_resume_{review_id}_{digest}').set_value('Yes').run()
@@ -103,11 +99,16 @@ class UnifiedReviews(unittest.TestCase):
             predict.return_value = result
             app.button(key=run_key).click().run()
             self.assertEqual([e.message for e in app.exception], [])
-            predict.assert_called_with(raw, lesion_confirmed=True, limitation_acknowledged=True)
+            predict.assert_called_with(preview, lesion_confirmed=True, limitation_acknowledged=True)
             self.assertEqual(app.radio(key='review_status_view').value, 'Completed predictions')
             self.assertEqual(app.selectbox(key='history_selection_active_Completed predictions').value, review_id)
             detail = self.db.prediction_detail(self.worker, review_id)
             self.assertEqual((detail['status'], detail['case_reference']), ('predicted', 'Case 2'))
+            self.assertEqual(detail['preview_sha256'], digest)
+            self.assertEqual(detail['image_sha256'], original_digest)
+            from explainability import prediction_image_digest
+            self.assertEqual(prediction_image_digest(detail), digest)
+            self.assertFalse(app.get('file_uploader'))
             self.assertEqual(len(self.db.history(self.worker)), 2)
 
     def test_finish_new_review_after_reopening_without_upload(self):

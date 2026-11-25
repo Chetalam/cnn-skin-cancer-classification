@@ -1,7 +1,7 @@
 import streamlit as st
 from translations import t
 from explainability import (
-    explain_saved_image, validate_explanation, LIMITATION,
+    explain_saved_image, validate_explanation, prediction_image_digest, LIMITATION,
     COLOUR_GUIDE_TITLE, COLOUR_GUIDE_INTRO, COLOUR_GUIDE_RED,
     COLOUR_GUIDE_BLUE, COLOUR_GUIDE_STRENGTH,
     COLOUR_GUIDE_EXAMPLE, COLOUR_GUIDE_CAUTION,
@@ -16,12 +16,12 @@ def show_explanation(prediction, raw=None, *, key):
         upload = st.file_uploader(t('Upload the original image to explain this saved review'), type=['jpg','jpeg','png'], key=key+'_explanation_original')
         raw = upload.getvalue() if upload else None
         st.caption(t('The stored preview cannot be used. The image and model must match the saved review exactly.'))
-    identity = (prediction['image_id'], prediction['model_name'], prediction.get('image_sha256'))
+    identity = (prediction['image_id'], prediction['model_name'], prediction_image_digest(prediction))
     if st.button(t('Generate visual explanation'), disabled=raw is None, key=key+'_explain'):
         st.session_state.pop('current_explanation', None)
         try:
             with st.spinner(t('Checking image, model and region scores...')):
-                result = explain_saved_image(raw, prediction, prediction.get('image_sha256'))
+                result = explain_saved_image(raw, prediction, prediction_image_digest(prediction))
                 st.session_state['current_explanation'] = (identity, result)
         except ValueError as exc:
             st.error(t(str(exc)))

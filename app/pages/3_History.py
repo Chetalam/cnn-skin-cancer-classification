@@ -57,22 +57,19 @@ with right:
     if row['status'] == 'awaiting_model' and row['archived_at'] is None:
         try:
             raw = db.get_pending_original(user['id'], selected)
-            if raw is None:
-                st.info(t('This older review contains only a preview. Choose the original image to complete it.'))
-                upload = st.file_uploader(t('Original image'), type=['jpg', 'jpeg', 'png'], key=f'resume_file_{selected}')
-                raw = upload.getvalue() if upload is not None else None
+            from_preview = raw is None
+            if from_preview:
+                raw = thumbnail
+                st.caption(t('This review will use the saved preview. It may contain less detail than the original photo.'))
             if raw is not None:
                 _, digest = validate_image(raw)
-                detail = db.prediction_detail(user['id'], selected)
-                if digest != detail['image_sha256']:
-                    raise ValueError('Prediction image does not match your saved review.')
                 visibility, acknowledged = lesion_checks(f'resume_{selected}_{digest}')
                 if st.button(t('Complete prediction'), key=f'resume_predict_{selected}', type='primary',
                              disabled=not classification_allowed(visibility, acknowledged)):
                     with st.spinner(t('Analysing image...')):
                         result = predict_image(raw, lesion_confirmed=visibility == 'Yes',
                                                limitation_acknowledged=acknowledged)
-                        db.record_prediction(user['id'], selected, digest, result)
+                        db.record_prediction(user['id'], selected, digest, result, from_preview=from_preview)
                     st.session_state['just_completed_review'] = selected
                     st.session_state['flash'] = 'Prediction saved to this review.'
                     st.rerun()
@@ -96,5 +93,7 @@ if row['status'] == 'predicted':
     st.caption(t('Model version') + ': ' + detail['model_name'])
     st.bar_chart({t('Model score'): detail['scores']})
     st.caption(t('Model scores are uncalibrated and do not represent diagnostic accuracy.'))
-    explanation = show_explanation(detail, key='history')
+    if detail['preview_sha256']:
+        st.caption(t('Prediction used the saved preview.'))
+    explanation = show_explanation(detail, raw=thumbnail if detail['preview_sha256'] else None, key='history')
     show_referral_guidance('history_referral_checklist', detail, explanation=explanation)
