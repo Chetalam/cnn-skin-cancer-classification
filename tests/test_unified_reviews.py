@@ -110,6 +110,64 @@ class UnifiedReviews(unittest.TestCase):
             self.assertEqual((detail['status'], detail['case_reference']), ('predicted', 'Case 2'))
             self.assertEqual(len(self.db.history(self.worker)), 2)
 
+    def test_finish_new_review_after_reopening_without_upload(self):
+        from images import validate_image
+
+        photo = io.BytesIO()
+        photo.name = 'lesion.png'
+        Image.new('RGB', (450, 300), 'red').save(photo, format='PNG')
+        raw = photo.getvalue()
+        _, digest = validate_image(raw)
+        with patch('streamlit.file_uploader', return_value=photo):
+            form = self.page('2_Analyse_Image.py')
+            consent = next(c for c in form.checkbox if c.label.startswith('Save this image'))
+            consent.check().run()
+            next(b for b in form.button if b.label == 'Save without prediction').click().run()
+            self.assertFalse(form.exception)
+        review_id = self.db.history(self.worker)[0]['id']
+        self.assertEqual(self.db.get_pending_original(self.worker, review_id), raw)
+
+        outsider = self.db.register('Other Worker', 'other@fixture.test', 'Another password 123', 'Fixture centre')
+        with self.assertRaises(ValueError):
+            self.db.get_pending_original(outsider, review_id)
+        self.db.archive_review(self.worker, review_id)
+        with self.assertRaises(ValueError):
+            self.db.get_pending_original(self.worker, review_id)
+        self.db.restore_review(self.worker, review_id)
+
+        app = self.page('3_History.py')
+        app.radio(key='review_status_view').set_value('Awaiting prediction').run()
+        self.assertFalse(app.get('file_uploader'))
+        button = f'resume_predict_{review_id}'
+        self.assertTrue(app.button(key=button).disabled)
+        app.radio(key=f'lesion_visibility_resume_{review_id}_{digest}').set_value('Yes').run()
+        app.checkbox(key=f'lesion_limitation_ack_resume_{review_id}_{digest}').check().run()
+        with patch('inference.predict_image') as predict:
+            predict.side_effect = ValueError('Model unavailable')
+            app.button(key=button).click().run()
+            self.assertEqual(self.db.get_pending_original(self.worker, review_id), raw)
+            predict.side_effect = None
+            predict.return_value = dict(scores={'BCC': .6, 'Melanoma': .3, 'SCC': .1}, model_name='Fixture CNN',
+                                        run_id='resume', model_sha256='b'*64, artifact_path='fixture.keras', preprocessing='fixture')
+            app.button(key=button).click().run()
+            self.assertFalse(app.exception)
+            predict.assert_called_with(raw, lesion_confirmed=True, limitation_acknowledged=True)
+        self.assertEqual(self.db.prediction_detail(self.worker, review_id)['status'], 'predicted')
+        self.assertEqual(len(self.db.history(self.worker)), 2)
+        with self.db.connect() as conn:
+            self.assertIsNone(conn.execute('SELECT pending_original FROM skin_lesion_images WHERE id=?', (review_id,)).fetchone()[0])
+
+    def test_preview_only_database_upgrades_in_place(self):
+        old = self.db.save_review(self.worker, 'old', '', 'old.png', Image.new('RGB', (20, 20)), 'c'*64)
+        with self.db.connect() as conn:
+            conn.execute('ALTER TABLE skin_lesion_images DROP COLUMN pending_original')
+            conn.execute('DELETE FROM schema_version WHERE version=8')
+        self.db.initialize()
+        self.db.initialize()
+        self.assertIsNone(self.db.get_pending_original(self.worker, old))
+        self.assertEqual(self.db.prediction_detail(self.worker, old)['status'], 'awaiting_model')
+        self.assertEqual(self.db.prediction_detail(self.worker, self.image)['status'], 'predicted')
+
     def test_dashboard_has_actions_without_recent_review_table(self):
         app=self.page('1_Dashboard.py')
         self.assertFalse(any(item.value=='Your recent reviews' for item in app.subheader))

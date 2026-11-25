@@ -1,4 +1,4 @@
-"""SQLite persistence. No plaintext passwords, uploaded originals or synthetic predictions."""
+"""SQLite persistence. Pending reviews can retain the original image until prediction succeeds."""
 import csv
 import hashlib
 import hmac
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS skin_lesion_images (
  request_key TEXT NOT NULL UNIQUE, case_reference TEXT NOT NULL,
  file_name TEXT NOT NULL, image_sha256 TEXT NOT NULL,
  width INTEGER NOT NULL CHECK(width>0), height INTEGER NOT NULL CHECK(height>0),
- thumbnail BLOB NOT NULL, uploaded_at INTEGER NOT NULL, archived_at INTEGER
+ thumbnail BLOB NOT NULL, uploaded_at INTEGER NOT NULL, archived_at INTEGER, pending_original BLOB
 );
 CREATE TABLE IF NOT EXISTS prediction_results (
  id INTEGER PRIMARY KEY, image_id INTEGER NOT NULL UNIQUE REFERENCES skin_lesion_images(id) ON DELETE CASCADE,
@@ -171,6 +171,9 @@ def initialize():
             BEFORE DELETE ON skin_lesion_images
             BEGIN SELECT RAISE(ABORT, 'Reviews must be archived, not permanently deleted.'); END""")
         conn.execute('INSERT OR IGNORE INTO schema_version VALUES (7,?)', (int(time.time()),))
+        if 'pending_original' not in columns:
+            conn.execute('ALTER TABLE skin_lesion_images ADD COLUMN pending_original BLOB')
+        conn.execute('INSERT OR IGNORE INTO schema_version VALUES (8,?)', (int(time.time()),))
 
 
 def normalize_email(email):
@@ -375,7 +378,9 @@ def update_profile(user_id, name, healthcare_center):
             audit(conn,user_id,'centre_changed_self_declared')
 def profile_complete(user):
     return bool(user and (user.get('healthcare_center') or '').strip())
-def save_review(user_id, request_key, case_reference, file_name, image, raw_digest):
+def save_review(user_id, request_key, case_reference, file_name, image, raw_digest, *, original=None):
+    if original is not None and hashlib.sha256(original).hexdigest() != raw_digest:
+        raise ValueError('Prediction image does not match your saved review.')
     thumb = image.copy()
     thumb.thumbnail((320,320))
     out = io.BytesIO()
@@ -383,15 +388,23 @@ def save_review(user_id, request_key, case_reference, file_name, image, raw_dige
     now = int(time.time())
     with connect() as conn:
         require_healthcare_worker(conn,user_id)
-        existing = conn.execute('SELECT id,user_id,archived_at FROM skin_lesion_images WHERE request_key=?', (request_key,)).fetchone()
+        conn.execute('BEGIN IMMEDIATE')
+        existing = conn.execute('SELECT id,user_id,archived_at,image_sha256 FROM skin_lesion_images WHERE request_key=?', (request_key,)).fetchone()
         if existing:
             if existing['user_id'] != user_id:
                 raise ValueError('Record unavailable.')
             if existing['archived_at'] is not None:
                 raise ValueError('This review is archived. Restore it in Reviews before changing it.')
+            if existing['image_sha256'] != raw_digest:
+                raise ValueError('Prediction image does not match your saved review.')
+            if original is not None:
+                conn.execute("""UPDATE skin_lesion_images SET pending_original=?
+                    WHERE id=? AND pending_original IS NULL AND id IN
+                    (SELECT image_id FROM prediction_results WHERE image_id=? AND status='awaiting_model')""",
+                    (original, existing['id'], existing['id']))
             return existing['id']
-        cursor = conn.execute('INSERT INTO skin_lesion_images(user_id,request_key,case_reference,file_name,image_sha256,width,height,thumbnail,uploaded_at) VALUES (?,?,?,?,?,?,?,?,?)',
-            (user_id,request_key,case_reference.strip()[:80],file_name.replace('\\\\','/').split('/')[-1][:200],raw_digest,image.width,image.height,out.getvalue(),now))
+        cursor = conn.execute('INSERT INTO skin_lesion_images(user_id,request_key,case_reference,file_name,image_sha256,width,height,thumbnail,uploaded_at,pending_original) VALUES (?,?,?,?,?,?,?,?,?,?)',
+            (user_id,request_key,case_reference.strip()[:80],file_name.replace('\\\\','/').split('/')[-1][:200],raw_digest,image.width,image.height,out.getvalue(),now,original))
         image_id = cursor.lastrowid
         conn.execute("INSERT INTO prediction_results(image_id,status,created_at) VALUES (?,'awaiting_model',?)", (image_id,now))
         audit(conn,user_id,'image_review_saved')
@@ -403,6 +416,18 @@ def history(user_id, view='active'):
     with connect() as conn:
         require_healthcare_worker(conn,user_id)
         return [dict(r) for r in conn.execute('SELECT i.id,i.case_reference,i.file_name,i.width,i.height,i.uploaded_at,i.archived_at,p.status,p.cancer_class,p.confidence,m.name AS model_name,p.created_at AS predicted_at FROM skin_lesion_images i JOIN prediction_results p ON p.image_id=i.id LEFT JOIN model_versions m ON m.id=p.model_id WHERE i.user_id=?' + condition + ' ORDER BY i.uploaded_at DESC,i.id DESC', (user_id,))]
+def get_pending_original(user_id, image_id):
+    with connect() as conn:
+        require_healthcare_worker(conn, user_id)
+        row = conn.execute("""SELECT i.pending_original FROM skin_lesion_images i
+            JOIN prediction_results p ON p.image_id=i.id
+            WHERE i.id=? AND i.user_id=? AND i.archived_at IS NULL AND p.status='awaiting_model'""",
+            (image_id, user_id)).fetchone()
+        if row is None:
+            raise ValueError('Record unavailable.')
+        return row['pending_original']
+
+
 def get_thumbnail(user_id, image_id):
     with connect() as conn:
         require_healthcare_worker(conn,user_id)
@@ -577,7 +602,7 @@ def record_prediction(user_id, image_id, raw_digest, result):
     with connect() as conn:
         conn.execute('BEGIN IMMEDIATE')
         require_healthcare_worker(conn, user_id)
-        image = conn.execute('SELECT * FROM skin_lesion_images WHERE id=? AND user_id=?', (image_id, user_id)).fetchone()
+        image = conn.execute('SELECT archived_at,image_sha256 FROM skin_lesion_images WHERE id=? AND user_id=?', (image_id, user_id)).fetchone()
         if image is None or not hmac.compare_digest(image['image_sha256'], raw_digest):
             raise ValueError('Prediction image does not match your saved review.')
         if image['archived_at'] is not None:
@@ -597,6 +622,7 @@ def record_prediction(user_id, image_id, raw_digest, result):
                      (winner, scores[winner], model_id, int(time.time()), prediction['id']))
         conn.executemany('INSERT INTO prediction_scores(prediction_id,cancer_class,score) VALUES (?,?,?)',
                          [(prediction['id'], label, scores[label]) for label in labels])
+        conn.execute('UPDATE skin_lesion_images SET pending_original=NULL WHERE id=?', (image_id,))
         audit(conn, user_id, 'experimental_prediction_saved')
         return prediction['id']
 
