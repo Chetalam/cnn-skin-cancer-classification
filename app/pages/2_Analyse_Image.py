@@ -45,14 +45,14 @@ with right:
     visibility_confirmed = visibility == 'Yes'
     classification_ready = classification_allowed(visibility, limitation_acknowledged)
     reference = st.text_input(t('Optional case reference'), max_chars=80)
-    consent = st.checkbox(t('Save a small preview and file metadata in Reviews.'))
-    st.caption(t('The original image is not stored. A preview up to 320 × 320 pixels is retained when saved.'))
+    consent = st.checkbox(t('Save this image for prediction and keep its preview and file details in Reviews.'))
+    st.caption(t('The original image is kept while the review is pending and removed from the review once a prediction is saved.'))
     analyse = st.button(t('Analyse and save'), type='primary', disabled=not classification_ready or not consent or not model_ready)
     save_only = st.button(t('Save without prediction'), disabled=image is None or not consent)
     if analyse or save_only:
         try:
             # Prediction failure does not turn into a fabricated result; the saved review stays pending.
-            image_id = db.save_review(user['id'], st.session_state['review_key'], reference, upload.name, image, digest)
+            image_id = db.save_review(user['id'], st.session_state['review_key'], reference, upload.name, image, digest, original=raw)
             st.session_state['saved_review'] = image_id
             if analyse:
                 with st.spinner(t('Analysing image...')):
@@ -79,5 +79,5 @@ if image is not None and st.session_state.get('saved_review'):
     elif result['status'] == 'predicted':
         st.info(t('A historical prediction is saved in Reviews. It does not establish that a lesion is present.'))
     else:
-        st.info(t('Saved without a prediction. To finish this review later, open Reviews, choose Awaiting prediction and upload the original file.'))
+        st.info(t('Saved without a prediction. To finish this review later, open Reviews, choose Awaiting prediction and select Complete prediction.'))
     st.page_link('pages/3_History.py', label=t('View Reviews'))

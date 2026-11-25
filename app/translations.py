@@ -1647,3 +1647,12 @@ CATALOG.update({
     'Open Analyse Image to upload and save a de-identified image. Reviews contains your saved records, predictions, referral downloads and CSV export. Model scores are not a diagnosis.': 'Fungua Changanua Picha ili kupakia na kuhifadhi picha isiyo na taarifa zinazomtambulisha mgonjwa. Kwenye Mapitio unaweza kuona rekodi na utabiri, kupakua rufaa na kuhamisha rekodi kama CSV. Alama za modeli si utambuzi wa ugonjwa.',
     'To finish a saved review, choose Awaiting prediction in Reviews, select the review and upload its original image. Confirm the lesion and model limits, then select Run prediction.': 'Ili kukamilisha pitio lililohifadhiwa, chagua Inasubiri utabiri kwenye Mapitio, chagua pitio kisha upakie picha yake asili. Thibitisha kwamba unaona kidonda na unaelewa mipaka ya modeli, kisha chagua Fanya utabiri.',
 })
+
+CATALOG.update({
+    'Complete prediction': 'Kamilisha utabiri',
+    'This older review contains only a preview. Choose the original image to complete it.': 'Pitio hili la awali lina picha ndogo ya hakiki pekee. Chagua picha asili ili kulikamilisha.',
+    'Save this image for prediction and keep its preview and file details in Reviews.': 'Hifadhi picha hii kwa ajili ya utabiri pamoja na hakikisho lake na maelezo ya faili kwenye Mapitio.',
+    'The original image is kept while the review is pending and removed from the review once a prediction is saved.': 'Picha asili huhifadhiwa wakati pitio linasubiri utabiri na huondolewa kwenye pitio baada ya utabiri kuhifadhiwa.',
+    'Saved without a prediction. To finish this review later, open Reviews, choose Awaiting prediction and select Complete prediction.': 'Pitio limehifadhiwa bila utabiri. Ili kulikamilisha baadaye, fungua Mapitio, chagua Inasubiri utabiri kisha uchague Kamilisha utabiri.',
+    'To finish a saved review, choose Awaiting prediction in Reviews, select the review, confirm the lesion and model limits, then select Complete prediction. Older reviews containing only a preview require the original file.': 'Ili kukamilisha pitio lililohifadhiwa, chagua Inasubiri utabiri kwenye Mapitio, chagua pitio, thibitisha kwamba unaona kidonda na unaelewa mipaka ya modeli, kisha uchague Kamilisha utabiri. Mapitio ya awali yaliyo na hakikisho pekee yanahitaji picha asili.',
+})
