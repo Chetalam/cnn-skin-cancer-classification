@@ -49,6 +49,8 @@ def checklist_text(prediction):
              f"{t('Model score')}: {prediction['confidence']:.1%}",
              f"{t('Model version')}: {clean(prediction['model_name'])}", '', t('All class scores')]
     lines.extend(f"{label}: {scores[label]:.1%}" for label in labels)
+    if prediction.get('preview_sha256'):
+        lines.append(t('Prediction used the saved preview.'))
     lines.extend(('', t('Model scores are uncalibrated and do not represent diagnostic accuracy.'), '', t(NOTICE), '', t(SCC_LIMITATION), ''))
     lines.extend(f"{i}. {t(step)}" for i, step in enumerate(STEPS, 1))
     lines.extend(("", t(HANDOVER)))

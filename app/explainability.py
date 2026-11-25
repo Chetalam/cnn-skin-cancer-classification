@@ -133,9 +133,13 @@ def explain_saved_image(raw, prediction, expected_image_hash):
                 overlay=overlay_png(rgb, deltas), original=png(Image.fromarray(np.uint8(np.clip(rgb,0,255)))))
 
 
+def prediction_image_digest(prediction):
+    return prediction.get('preview_sha256') or prediction.get('image_sha256')
+
+
 def validate_explanation(explanation, prediction):
-    if (explanation.get('method') != METHOD or not prediction.get('image_sha256')
-            or explanation.get('image_hash') != prediction['image_sha256']
+    if (explanation.get('method') != METHOD or not prediction_image_digest(prediction)
+            or explanation.get('image_hash') != prediction_image_digest(prediction)
             or any(explanation.get(k) != prediction.get(k) for k in ('image_id','model_name','cancer_class'))):
         raise ValueError('The explanation does not belong to this saved prediction.')
     try:

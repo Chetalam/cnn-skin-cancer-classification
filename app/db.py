@@ -174,6 +174,10 @@ def initialize():
         if 'pending_original' not in columns:
             conn.execute('ALTER TABLE skin_lesion_images ADD COLUMN pending_original BLOB')
         conn.execute('INSERT OR IGNORE INTO schema_version VALUES (8,?)', (int(time.time()),))
+        prediction_columns = {r['name'] for r in conn.execute('PRAGMA table_info(prediction_results)')}
+        if 'preview_sha256' not in prediction_columns:
+            conn.execute('ALTER TABLE prediction_results ADD COLUMN preview_sha256 TEXT')
+        conn.execute('INSERT OR IGNORE INTO schema_version VALUES (9,?)', (int(time.time()),))
 
 
 def normalize_email(email):
@@ -589,7 +593,7 @@ def require_healthcare_worker(conn, user_id):
         raise ValueError('Image reviews are available only through a Healthcare Worker account. Sign in with your separate Healthcare Worker credentials.')
     return user
 
-def record_prediction(user_id, image_id, raw_digest, result):
+def record_prediction(user_id, image_id, raw_digest, result, *, from_preview=False):
     """Attach one immutable, model-versioned result to an owned saved image."""
     labels = ['BCC', 'Melanoma', 'SCC']
     scores = result.get('scores', {})
@@ -603,7 +607,16 @@ def record_prediction(user_id, image_id, raw_digest, result):
         conn.execute('BEGIN IMMEDIATE')
         require_healthcare_worker(conn, user_id)
         image = conn.execute('SELECT archived_at,image_sha256 FROM skin_lesion_images WHERE id=? AND user_id=?', (image_id, user_id)).fetchone()
-        if image is None or not hmac.compare_digest(image['image_sha256'], raw_digest):
+        if image is None:
+            raise ValueError('Record unavailable.')
+        expected_digest = image['image_sha256']
+        if from_preview:
+            preview = conn.execute('''SELECT thumbnail FROM skin_lesion_images
+                WHERE id=? AND user_id=? AND pending_original IS NULL''', (image_id, user_id)).fetchone()
+            if preview is None:
+                raise ValueError('Prediction image does not match your saved review.')
+            expected_digest = hashlib.sha256(preview['thumbnail']).hexdigest()
+        if not hmac.compare_digest(expected_digest, raw_digest):
             raise ValueError('Prediction image does not match your saved review.')
         if image['archived_at'] is not None:
             raise ValueError('Restore this archived review before adding a prediction.')
@@ -618,8 +631,8 @@ def record_prediction(user_id, image_id, raw_digest, result):
         else:
             model_id = model['id']
         winner = max(labels, key=lambda key: scores[key])
-        conn.execute("UPDATE prediction_results SET status='predicted',cancer_class=?,confidence=?,model_id=?,created_at=? WHERE id=?",
-                     (winner, scores[winner], model_id, int(time.time()), prediction['id']))
+        conn.execute("UPDATE prediction_results SET status='predicted',cancer_class=?,confidence=?,model_id=?,created_at=?,preview_sha256=? WHERE id=?",
+                     (winner, scores[winner], model_id, int(time.time()), raw_digest if from_preview else None, prediction['id']))
         conn.executemany('INSERT INTO prediction_scores(prediction_id,cancer_class,score) VALUES (?,?,?)',
                          [(prediction['id'], label, scores[label]) for label in labels])
         conn.execute('UPDATE skin_lesion_images SET pending_original=NULL WHERE id=?', (image_id,))

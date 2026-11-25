@@ -67,6 +67,8 @@ def checklist_docx(prediction, explanation=None):
     # A separate wrap opportunity prevents long SHA strings pushing table widths.
     p.add_run(clean(prediction['model_name']))
     p.paragraph_format.space_after = Pt(8)
+    if prediction.get('preview_sha256'):
+        doc.add_paragraph(t('Prediction used the saved preview.'))
     doc.add_heading(t('All class scores'), 1)
     table = doc.add_table(rows=1, cols=2)
     table.style = 'Table Grid'
